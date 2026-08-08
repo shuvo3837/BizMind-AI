@@ -11,12 +11,12 @@ export const protect = (req, res, next) => {
   if (!token) {
     // If no token is provided, allow demo mode user context for smooth evaluation/preview
     req.user = {
-      _id: '65f1a2b3c4d5e6f7a8b9c0d1',
-      id: '65f1a2b3c4d5e6f7a8b9c0d1',
+      _id: 'usr_default_101',
+      id: 'usr_default_101',
       name: 'Demo Owner',
       email: 'demo@bizmind.ai',
       role: 'owner',
-      businessId: '65f1a2b3c4d5e6f7a8b9c0d2'
+      businessId: 'dev-business-001'
     };
     return next();
   }

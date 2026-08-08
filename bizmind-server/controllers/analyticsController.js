@@ -1,55 +1,134 @@
-import { sendSuccess } from '../utils/apiResponse.js';
+import analyticsService from '../services/analyticsService.js';
+import { getBusinessContext } from '../services/businessContextService.js';
+import { sendSuccess, sendError } from '../utils/apiResponse.js';
+
+export const getSummary = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
+
+    const data = await analyticsService.getAnalyticsSummary(businessId, period);
+    console.log('[ANALYTICS]', {
+      businessId,
+      salesRecords: data.totalSales,
+      revenue: data.totalRevenue
+    });
+    return sendSuccess(res, 'Analytics summary retrieved', data);
+  } catch (error) {
+    return sendError(res, error.message || 'Error calculating analytics summary', 500);
+  }
+};
+
+export const getRevenueTrend = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
+
+    const trend = await analyticsService.getRevenueTrend(businessId, period);
+    return sendSuccess(res, 'Revenue trend retrieved', trend);
+  } catch (error) {
+    return sendError(res, error.message || 'Error fetching revenue trend', 500);
+  }
+};
+
+export const getCategoryPerformance = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
+
+    const categories = await analyticsService.getCategoryPerformance(businessId, period);
+    return sendSuccess(res, 'Category performance retrieved', categories);
+  } catch (error) {
+    return sendError(res, error.message || 'Error fetching category performance', 500);
+  }
+};
+
+export const getTopProducts = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
+    const limit = parseInt(req.query.limit, 10) || 5;
+
+    const products = await analyticsService.getTopProducts(businessId, period, limit);
+    return sendSuccess(res, 'Top products retrieved', products);
+  } catch (error) {
+    return sendError(res, error.message || 'Error fetching top products', 500);
+  }
+};
+
+export const getInventoryAnalytics = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+
+    const inventory = await analyticsService.getInventoryAnalytics(businessId);
+    return sendSuccess(res, 'Inventory analytics retrieved', inventory);
+  } catch (error) {
+    return sendError(res, error.message || 'Error fetching inventory analytics', 500);
+  }
+};
+
+export const getBusinessInsights = async (req, res) => {
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
+
+    const insights = await analyticsService.getCalculatedInsights(businessId, period);
+    return sendSuccess(res, 'Business insights calculated', insights);
+  } catch (error) {
+    return sendError(res, error.message || 'Error generating insights', 500);
+  }
+};
 
 export const getDashboardAnalytics = async (req, res) => {
-  const analyticsData = {
-    overview: {
-      totalRevenue: 184500,
-      revenueGrowthPct: +14.2,
-      totalExpenses: 62300,
-      netProfit: 122200,
-      grossMarginPct: 66.2,
-      activeCustomers: 1420,
-      monthlyTarget: 150000,
-      targetProgressPct: 123
-    },
-    revenueTrend: [
-      { month: 'Jan', revenue: 95000, expenses: 42000, profit: 53000 },
-      { month: 'Feb', revenue: 110000, expenses: 45000, profit: 65000 },
-      { month: 'Mar', revenue: 128000, expenses: 49000, profit: 79000 },
-      { month: 'Apr', revenue: 142000, expenses: 53000, profit: 89000 },
-      { month: 'May', revenue: 160000, expenses: 58000, profit: 102000 },
-      { month: 'Jun', revenue: 175000, expenses: 60000, profit: 115000 },
-      { month: 'Jul', revenue: 184500, expenses: 62300, profit: 122200 }
-    ],
-    salesByCategory: [
-      { category: 'SaaS Subscriptions', value: 92000, fill: '#3b82f6' },
-      { category: 'Physical Hardware', value: 48000, fill: '#10b981' },
-      { category: 'Consulting Services', value: 28500, fill: '#f59e0b' },
-      { category: 'Enterprise Add-ons', value: 16000, fill: '#8b5cf6' }
-    ],
-    inventoryHealth: [
-      { product: 'Smart Hub Pro', stock: 142, reorderPoint: 30, status: 'Healthy' },
-      { product: 'IoT Sensor Node', stock: 18, reorderPoint: 25, status: 'Low Stock' },
-      { product: 'Wireless Gateway', stock: 88, reorderPoint: 20, status: 'Healthy' },
-      { product: 'Industrial Power Unit', stock: 4, reorderPoint: 10, status: 'Critical' }
-    ]
-  };
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
 
-  return sendSuccess(res, 'Dashboard analytics data loaded', analyticsData);
+    const overview = await analyticsService.getAnalyticsSummary(businessId, period);
+    const revenueTrend = await analyticsService.getRevenueTrend(businessId, period);
+    const salesByCategory = await analyticsService.getCategoryPerformance(businessId, period);
+    const inventoryHealth = await analyticsService.getInventoryAnalytics(businessId);
+    const insights = await analyticsService.getCalculatedInsights(businessId, period);
+
+    return sendSuccess(res, 'Dashboard analytics data loaded', {
+      overview,
+      revenueTrend,
+      salesByCategory,
+      inventoryHealth,
+      insights
+    });
+  } catch (error) {
+    return sendError(res, error.message || 'Error compiling dashboard analytics', 500);
+  }
 };
 
 export const getDeepAnalytics = async (req, res) => {
-  const deepAnalytics = {
-    customerAcquisitionCost: 42.50,
-    lifetimeValue: 680.00,
-    churnRatePct: 1.8,
-    averageBasketSize: 185.00,
-    topPerformingRegions: [
-      { region: 'North America', revenue: 98000 },
-      { region: 'Western Europe', revenue: 52000 },
-      { region: 'Asia Pacific', revenue: 34500 }
-    ]
-  };
+  try {
+    const { businessId } = await getBusinessContext(req);
+    const period = req.query.period || 'all';
 
-  return sendSuccess(res, 'Deep analytics insights loaded', deepAnalytics);
+    const summary = await analyticsService.getAnalyticsSummary(businessId, period);
+    const categories = await analyticsService.getCategoryPerformance(businessId, period);
+    const topProducts = await analyticsService.getTopProducts(businessId, period, 5);
+
+    return sendSuccess(res, 'Deep analytics insights loaded', {
+      summary,
+      topPerformingCategories: categories,
+      topProducts,
+      averageBasketSize: summary.averageOrderValue
+    });
+  } catch (error) {
+    return sendError(res, error.message || 'Error compiling deep analytics', 500);
+  }
+};
+
+export default {
+  getSummary,
+  getRevenueTrend,
+  getCategoryPerformance,
+  getTopProducts,
+  getInventoryAnalytics,
+  getBusinessInsights,
+  getDashboardAnalytics,
+  getDeepAnalytics
 };

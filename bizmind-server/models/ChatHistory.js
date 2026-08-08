@@ -9,8 +9,8 @@ const chatMessageSchema = new mongoose.Schema({
 
 const chatHistorySchema = new mongoose.Schema(
   {
-    businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    businessId: { type: String, required: true, index: true },
+    userId: { type: String, required: true, index: true },
     sessionTitle: { type: String, default: 'BI Strategy Session' },
     messages: [chatMessageSchema]
   },

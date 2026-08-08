@@ -2,13 +2,16 @@ import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(
   {
-    businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true },
-    sku: { type: String, required: true },
+    businessId: { type: String, required: true, index: true },
+    uploadId: { type: String, index: true },
+    sku: { type: String, default: '' },
     name: { type: String, required: true },
     category: { type: String, default: 'General' },
-    costPrice: { type: Number, required: true },
-    sellingPrice: { type: Number, required: true },
+    costPrice: { type: Number, default: 0 },
+    sellingPrice: { type: Number, default: 0 },
     stockQuantity: { type: Number, default: 0 },
+    totalUnitsSold: { type: Number, default: 0 },
+    totalRevenue: { type: Number, default: 0 },
     reorderLevel: { type: Number, default: 10 }
   },
   { timestamps: true }

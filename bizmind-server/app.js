@@ -31,9 +31,12 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/uploads', uploadRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/report', reportRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/chat', aiRoutes);
 
 // Error Handler Middleware
 app.use(errorHandler);

@@ -1,19 +1,56 @@
-import React, { useState } from 'react';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, Bot, Sparkles, Upload } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { ChatMessage } from './ChatMessage.jsx';
 import { PromptSuggestions } from './PromptSuggestions.jsx';
 import { useAI } from '../../hooks/useAI.js';
+import { analyticsService } from '../../services/analyticsService.js';
 
 export const ChatWindow = () => {
   const { sendMessage, loading } = useAI();
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      sender: 'ai',
-      text: 'Hello Alex! I am your BizMind AI Business Consultant. I have analyzed your Q2 financial reports and sales metrics. How can I assist your strategy today?'
-    }
-  ]);
+  const [hasData, setHasData] = useState(false);
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    const checkDataAvailability = async () => {
+      try {
+        const res = await analyticsService.getSummary();
+        const dataAvailable = res?.data?.hasData === true;
+        setHasData(dataAvailable);
+
+        if (dataAvailable) {
+          const rev = res.data.totalRevenue?.toLocaleString();
+          const sales = res.data.totalSales;
+          setMessages([
+            {
+              id: '1',
+              sender: 'ai',
+              text: `Hello! I am your BizMind AI Business Consultant. I have analyzed your uploaded dataset ($${rev} revenue across ${sales} sales transactions). How can I assist your business strategy today?`
+            }
+          ]);
+        } else {
+          setMessages([
+            {
+              id: '1',
+              sender: 'ai',
+              text: 'Hello! I am your BizMind AI Advisor. No business data has been uploaded yet. Please upload your CSV, Excel, or PDF files in the Upload Center so I can analyze your sales, expenses, and margins.'
+            }
+          ]);
+        }
+      } catch (err) {
+        setMessages([
+          {
+            id: '1',
+            sender: 'ai',
+            text: 'Hello! I am your BizMind AI Advisor. Ready to answer your questions and assist your business strategy.'
+          }
+        ]);
+      }
+    };
+
+    checkDataAvailability();
+  }, []);
 
   const handleSend = async (textToSend) => {
     const promptText = textToSend || input;
@@ -25,12 +62,12 @@ export const ChatWindow = () => {
 
     try {
       const res = await sendMessage(promptText);
-      const aiReply = res?.reply || res?.message || 'Analyzed data. Your gross margin is steady at 66%. Consider scaling marketing in high-LTV regions.';
+      const aiReply = res?.reply || res?.message || 'Analyzed verified dataset metrics.';
       setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), sender: 'ai', text: aiReply }]);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), sender: 'ai', text: 'I encountered an issue connecting to the Gemini engine. Please verify your GEMINI_API_KEY in secrets.' }
+        { id: (Date.now() + 1).toString(), sender: 'ai', text: 'I encountered an issue querying the Gemini AI model. Please verify your GEMINI_API_KEY in the platform settings secrets.' }
       ]);
     }
   };
@@ -45,11 +82,17 @@ export const ChatWindow = () => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              BizMind AI Advisor <Sparkles size={14} className="text-amber-500 fill-amber-500" />
+              BizMind AI Strategic Consultant <Sparkles size={14} className="text-amber-500 fill-amber-500" />
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Powered by Google Gemini API</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Grounded strictly in verified database metrics</p>
           </div>
         </div>
+
+        {!hasData && (
+          <Link to="/upload" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 text-xs font-bold border border-indigo-200 dark:border-indigo-800">
+            <Upload size={14} /> Upload Center
+          </Link>
+        )}
       </div>
 
       {/* Messages */}
@@ -65,7 +108,7 @@ export const ChatWindow = () => {
       </div>
 
       {/* Prompt Suggestions */}
-      <PromptSuggestions onSelect={handleSend} />
+      <PromptSuggestions onSelect={handleSend} hasData={hasData} />
 
       {/* Input */}
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -80,13 +123,13 @@ export const ChatWindow = () => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask AI about sales growth, expense cuts, inventory forecast..."
+            placeholder="Ask AI about revenue drivers, cost savings, top categories..."
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition-colors"
+            className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 transition-colors cursor-pointer"
           >
             <Send size={18} />
           </button>

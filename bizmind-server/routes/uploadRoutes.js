@@ -1,11 +1,17 @@
 import express from 'express';
-import { handleFileUpload, getUploadHistory } from '../controllers/uploadController.js';
+import { handleFileUpload, getUploads, getUploadById, deleteUpload } from '../controllers/uploadController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
-import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/file', protect, upload.single('file'), handleFileUpload);
-router.get('/history', protect, getUploadHistory);
+// Primary endpoints per API specification
+router.post('/', upload.single('file'), handleFileUpload);
+router.get('/', getUploads);
+router.get('/:id', getUploadById);
+router.delete('/:id', deleteUpload);
+
+// Compatibility aliases
+router.post('/file', upload.single('file'), handleFileUpload);
+router.get('/history', getUploads);
 
 export default router;

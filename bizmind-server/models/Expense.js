@@ -2,9 +2,10 @@ import mongoose from 'mongoose';
 
 const expenseSchema = new mongoose.Schema(
   {
-    businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true },
+    businessId: { type: String, required: true, index: true },
+    uploadId: { type: String, index: true },
     date: { type: Date, default: Date.now },
-    category: { type: String, required: true }, // e.g., Payroll, Marketing, Logistics, Utilities
+    category: { type: String, required: true },
     description: { type: String, default: '' },
     amount: { type: Number, required: true },
     status: { type: String, enum: ['paid', 'pending'], default: 'paid' }

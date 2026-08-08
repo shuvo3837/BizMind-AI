@@ -1,11 +1,16 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 
-export const PromptSuggestions = ({ onSelect }) => {
-  const suggestions = [
-    'How can I increase gross margin by 5% next quarter?',
-    'Analyze my top operating expenses and cost drivers',
-    'Which products are at risk of running out of stock?'
+export const PromptSuggestions = ({ onSelect, hasData = true }) => {
+  const suggestions = hasData ? [
+    'What is my highest revenue product?',
+    'Analyze my profit margin and expense breakdown',
+    'Which categories generate the most sales?',
+    'Give me an executive business summary'
+  ] : [
+    'How do I upload my business data?',
+    'What file types are supported for parsing?',
+    'How does BizMind AI calculate real analytics?'
   ];
 
   return (

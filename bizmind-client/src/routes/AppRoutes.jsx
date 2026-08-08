@@ -4,7 +4,7 @@ import { LandingPage } from '../pages/Landing/LandingPage.jsx';
 import { LoginPage } from '../pages/Auth/LoginPage.jsx';
 import { RegisterPage } from '../pages/Auth/RegisterPage.jsx';
 import { DashboardPage } from '../pages/Dashboard/DashboardPage.jsx';
-import { UploadPage } from '../pages/Upload/UploadPage.jsx';
+import { UploadCenter } from '../pages/Upload/UploadCenter.jsx';
 import { AnalyticsPage } from '../pages/Analytics/AnalyticsPage.jsx';
 import { AIChatPage } from '../pages/AIChat/AIChatPage.jsx';
 import { ReportsPage } from '../pages/Reports/ReportsPage.jsx';
@@ -24,7 +24,8 @@ export const AppRoutes = () => {
       {/* Protected Dashboard Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/upload" element={<UploadPage />} />
+        <Route path="/upload" element={<UploadCenter />} />
+        <Route path="/upload-center" element={<UploadCenter />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/ai-chat" element={<AIChatPage />} />
         <Route path="/reports" element={<ReportsPage />} />
