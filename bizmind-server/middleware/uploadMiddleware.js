@@ -24,7 +24,10 @@ const fileFilter = (req, file, cb) => {
   if (allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Supported formats: CSV, Excel, PDF, JSON, PNG, JPG'));
+    const err = new Error('Invalid file type. Supported formats: CSV, Excel, PDF, JSON, PNG, JPG');
+    err.statusCode = 400;
+    err.code = 'INVALID_FILE_TYPE';
+    cb(err);
   }
 };
 

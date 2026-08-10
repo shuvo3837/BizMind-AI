@@ -1,0 +1,29 @@
+=== HEALTH ===
+HTTP 200
+{"success":true,"message":"BizMind AI backend is running","data":{"service":"BizMind AI Backend","timestamp":"2026-08-10T19:03:02.680Z","database":"connected"}}
+
+=== UPLOADS (BEFORE) ===
+HTTP 200
+{"success":true,"message":"Uploads retrieved.","data":[]}
+
+=== DASHBOARD (BEFORE) ===
+HTTP 200
+{"success":true,"message":"No business data available yet.","data":{"hasData":false,"kpis":null,"charts":null}}
+
+=== UPLOAD ===
+HTTP 500
+{"success":false,"message":"Sale validation failed: userId: Path `userId` is required.","errors":null}
+
+=== DASHBOARD (AFTER) ===
+HTTP 200
+{"success":true,"message":"No business data available yet.","data":{"hasData":false,"kpis":null,"charts":null}}
+
+=== AI RECOMMENDATIONS ===
+HTTP 200
+{"success":true,"message":"No data available for recommendations.","data":{"recommendations":[],"hasData":false}}
+
+=== INVENTORY ===
+HTTP 200
+{"success":true,"message":"Inventory retrieved.","data":{"total":0,"items":[]}}
+
+DONE

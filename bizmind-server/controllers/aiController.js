@@ -1,57 +1,155 @@
-import { generateBusinessInsights } from '../services/geminiService.js';
-import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { calculateAnalytics } from '../services/analyticsService.js';
+import { generateAiResponse, isAiConfigured, getActiveAiProvider } from '../services/aiService.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ok, fail } from '../utils/apiResponse.js';
 
-export const queryAIChat = async (req, res) => {
-  try {
-    const { prompt, businessContext } = req.body;
+export const queryAIChat = asyncHandler(async (req, res) => {
+  const businessId = req.user?.businessId;
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-    if (!prompt) {
-      return sendError(res, 'Prompt is required', 400);
-    }
+  const prompt = (req.body.prompt || req.body.message || req.body.question || '').trim();
+  if (!prompt) return fail(res, 'A prompt is required.', 400);
 
-    const aiResponse = await generateBusinessInsights(businessContext || {
-      companyName: 'Apex Growth Dynamics',
-      revenue: 184500,
-      expenses: 62300,
-      topCategory: 'SaaS Subscriptions'
-    }, prompt);
-
-    return sendSuccess(res, 'AI response generated', {
-      reply: aiResponse.text || aiResponse.message,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    return sendError(res, error.message, 500);
+  if (!isAiConfigured()) {
+    return fail(res, 'No AI provider is configured on the server.', 503);
   }
-};
 
-export const getAIRecommendations = async (req, res) => {
-  const recommendations = [
+  const analytics = await calculateAnalytics(businessId);
+  const ai = await generateAiResponse(
     {
-      id: 'rec_1',
-      type: 'revenue_growth',
-      title: 'Expand High-Margin Enterprise Subscriptions',
-      impact: 'High (+$22,000 / mo)',
-      confidence: 94,
-      description: 'Your Enterprise Add-ons hold a 78% profit margin. Increasing sales team outreach to current SaaS customers could generate $22K in recurring annual contract value.'
+      metrics: {
+        totalRevenue: analytics.totalRevenue,
+        totalProfit: analytics.totalProfit,
+        totalExpenses: analytics.totalExpenses,
+        profitMargin: analytics.profitMargin,
+      },
+      topProducts: analytics.topProducts?.slice(0, 10) || [],
+      revenueByCategory: analytics.revenueByCategory || [],
     },
-    {
-      id: 'rec_2',
-      type: 'cost_reduction',
-      title: 'Restructure Ad Campaign Bidding for North America',
-      impact: 'Medium (-$4,500 / mo)',
-      confidence: 88,
-      description: 'Acquisition cost in North America spiked 12% last month. Reallocating $5,000 ad budget toward Asia Pacific channels yields 1.8x higher return on ad spend.'
-    },
-    {
-      id: 'rec_3',
-      type: 'inventory_alert',
-      title: 'Trigger Automated Reorder for IoT Sensor Node',
-      impact: 'Critical (Prevents Stockout)',
-      confidence: 99,
-      description: 'Current stock is 18 units (reorder point 25). At current 4.2 units/day velocity, stockout will occur in 4 days.'
-    }
-  ];
+    prompt
+  );
 
-  return sendSuccess(res, 'AI recommendations loaded', recommendations);
+  if (!ai.ok) return fail(res, ai.error || 'AI provider failed.', 503);
+  return ok(res, 'AI response generated.', { provider: ai.provider, text: ai.text });
+});
+
+export const getAIRecommendations = asyncHandler(async (req, res) => {
+  const businessId = req.user?.businessId;
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const analytics = await calculateAnalytics(businessId);
+  const hasData =
+    (analytics.totalSales || 0) + (analytics.totalProducts || 0) + (analytics.totalExpenses || 0) > 0 ||
+    (Array.isArray(analytics.inventoryStatus) ? analytics.inventoryStatus.length : (analytics.inventoryCount || 0)) > 0;
+
+  if (!hasData) {
+    return ok(res, 'No data available for recommendations.', {
+      recommendations: [],
+      hasData: false,
+    });
+  }
+
+  if (!isAiConfigured()) {
+    const recommendations = buildRuleBasedRecommendations(analytics);
+    return ok(res, 'Rule-based recommendations generated (no AI provider configured).', {
+      provider: 'rules',
+      recommendations,
+      hasData: true,
+    });
+  }
+
+  const ai = await generateAiResponse(
+    {
+      metrics: {
+        totalRevenue: analytics.totalRevenue,
+        totalProfit: analytics.totalProfit,
+        totalExpenses: analytics.totalExpenses,
+        profitMargin: analytics.profitMargin,
+      },
+      topProducts: analytics.topProducts || [],
+      revenueByCategory: analytics.revenueByCategory || [],
+      expenseByCategory: analytics.expenseByCategory || [],
+      inventoryStatus: analytics.inventoryStatus || [],
+    },
+    'Based ONLY on the verified data above, list 5 concrete, data-backed business recommendations.'
+  );
+
+  if (!ai.ok) {
+    return ok(res, 'AI provider failed; rule-based recommendations returned.', {
+      provider: 'rules',
+      recommendations: buildRuleBasedRecommendations(analytics),
+      hasData: true,
+      aiError: ai.error,
+    });
+  }
+
+  return ok(res, 'AI recommendations generated.', {
+    provider: ai.provider,
+    text: ai.text,
+    hasData: true,
+  });
+});
+
+export const getAIStatus = asyncHandler(async (req, res) => {
+  return ok(res, 'AI provider status.', {
+    configured: isAiConfigured(),
+    activeProvider: getActiveAiProvider(),
+    providers: {
+      gemini: Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 10),
+      groq: Boolean(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.length > 10),
+    },
+  });
+});
+
+const buildRuleBasedRecommendations = (analytics) => {
+  const recs = [];
+
+  if (analytics.profitMargin < 10 && analytics.totalRevenue > 0) {
+    recs.push({
+      priority: 'high',
+      category: 'profitability',
+      title: 'Improve profit margin',
+      detail: `Your current profit margin is ${analytics.profitMargin}%, which is below the 10% healthy threshold. Review pricing, reduce low-margin products, and cut discretionary expenses.`,
+    });
+  }
+
+  const lowStock = (analytics.inventoryStatus || []).filter((i) => i.lowStock);
+  if (lowStock.length > 0) {
+    recs.push({
+      priority: 'high',
+      category: 'inventory',
+      title: `${lowStock.length} items need restocking`,
+      detail: `Products at or below reorder level: ${lowStock.slice(0, 5).map((i) => i.productName).join(', ')}.`,
+    });
+  }
+
+  if (analytics.topProducts && analytics.topProducts.length > 0) {
+    const top = analytics.topProducts[0];
+    recs.push({
+      priority: 'medium',
+      category: 'sales',
+      title: `Top product: ${top.productName}`,
+      detail: `${top.productName} drives ${Math.round(top.revenue / (analytics.totalRevenue || 1) * 100)}% of revenue. Consider expanding marketing around it and sourcing alternatives to reduce dependency risk.`,
+    });
+  }
+
+  if (analytics.totalExpenses > analytics.totalProfit && analytics.totalProfit > 0) {
+    recs.push({
+      priority: 'high',
+      category: 'expenses',
+      title: 'Expenses exceed profit',
+      detail: `Total expenses (${analytics.totalExpenses}) exceed profit (${analytics.totalProfit}). Audit the largest expense categories and renegotiate recurring costs.`,
+    });
+  }
+
+  if (recs.length === 0) {
+    recs.push({
+      priority: 'low',
+      category: 'general',
+      title: 'Keep monitoring',
+      detail: 'Your metrics look stable. Continue tracking revenue, profit, and inventory weekly to spot changes early.',
+    });
+  }
+
+  return recs;
 };

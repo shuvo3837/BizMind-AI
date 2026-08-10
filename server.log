@@ -1,0 +1,29 @@
+
+> bizmind-ai@1.0.0 start
+> node bizmind-server/server.js
+
+◇ injected env (12) from bizmind-server\.env // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (1) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (0) from bizmind-server\.env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+🎨 Vite middleware mounted. Frontend root: C:\projects\New folder\BizMind-AI
+   index.html: C:\projects\New folder\BizMind-AI\index.html
+   node_modules: C:\projects\New folder\BizMind-AI\bizmind-client\node_modules
+🚀 BizMind AI Backend listening on http://0.0.0.0:4000
+📊 Environment: development
+🤖 Gemini: not configured (placeholder)
+⚡ Groq: not configured (placeholder)
+🔗 API health: http://0.0.0.0:4000/api/health
+🌐 Frontend:   http://0.0.0.0:4000/ (React app via Vite)
+
+👉 Open http://localhost:4000 in your browser.
+
+✅ MongoDB (in-memory) connected: 127.0.0.1/bizmind_ai
+✅ MongoDB connected: 127.0.0.1/bizmind_ai
+[2026-08-10T19:03:02.695Z] GET /api/health -> 200 (15ms) user=anonymous
+[BYPASS_AUTH] Created dev Business 6a7a206664fdeea91e186e32
+[2026-08-10T19:03:02.745Z] GET /api/upload -> 200 (38ms) user=000000000000000000000001
+[2026-08-10T19:03:02.761Z] GET /api/analytics/dashboard -> 200 (7ms) user=000000000000000000000001
+[2026-08-10T19:03:02.822Z] POST /api/upload -> 500 (50ms) user=000000000000000000000001
+[2026-08-10T19:03:02.842Z] GET /api/analytics/dashboard -> 200 (9ms) user=000000000000000000000001
+[2026-08-10T19:03:02.858Z] GET /api/ai/recommendations -> 200 (6ms) user=000000000000000000000001
+[2026-08-10T19:03:02.872Z] GET /api/inventory -> 200 (4ms) user=000000000000000000000001

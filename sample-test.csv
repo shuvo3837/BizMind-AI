@@ -1,0 +1,7 @@
+date,productName,category,quantity,unitPrice,cost,stock
+2024-01-15,Wireless Mouse,Electronics,15,29.99,12.50,80
+2024-02-03,Mechanical Keyboard,Electronics,8,89.99,42.00,40
+2024-02-20,USB-C Hub,Electronics,22,49.99,18.50,120
+2024-03-11,Office Chair,Furniture,5,299.99,140.00,18
+2024-03-22,Desk Lamp,Furniture,12,39.99,15.50,55
+2024-04-05,Notebook Bundle,Stationery,40,12.99,4.50,200

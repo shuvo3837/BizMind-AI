@@ -8,5 +8,17 @@ export const businessService = {
   updateProfile: async (data) => {
     const res = await api.put('/business/profile', data);
     return res.data;
+  },
+  create: async (data) => {
+    const res = await api.post('/business', data);
+    return res.data;
+  },
+  getAll: async () => {
+    const res = await api.get('/business');
+    return res.data;
+  },
+  getById: async (id) => {
+    const res = await api.get(`/business/${id}`);
+    return res.data;
   }
 };

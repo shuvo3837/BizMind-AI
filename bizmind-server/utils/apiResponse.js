@@ -13,3 +13,7 @@ export const sendError = (res, message = 'An error occurred', statusCode = 500, 
     errors
   });
 };
+
+// Short aliases
+export const ok = sendSuccess;
+export const fail = sendError;

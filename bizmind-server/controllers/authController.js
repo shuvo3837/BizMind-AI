@@ -1,73 +1,106 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 import { JWT_CONFIG } from '../config/jwt.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { validateRegisterInput, validateLoginInput } from '../validators/authValidator.js';
 
-export const registerUser = async (req, res) => {
-  try {
-    const { name, email, password, companyName, industry } = req.body;
+const generateToken = (userId, email, role) =>
+  jwt.sign({ id: userId, email, role }, JWT_CONFIG.secret, { expiresIn: JWT_CONFIG.expiresIn });
 
-    const mockUser = {
-      id: 'usr_' + Date.now(),
-      name: name || 'Demo Business Owner',
-      email: email || 'owner@bizmind.ai',
-      role: 'owner',
-      business: {
-        id: 'biz_' + Date.now(),
-        companyName: companyName || 'BizMind Global Corp',
-        industry: industry || 'SaaS & E-Commerce'
-      }
-    };
+const sanitizeUser = (user) => ({
+  id: user._id.toString(),
+  _id: user._id.toString(),
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  businessId: user.businessId ? user.businessId.toString() : null,
+  avatar: user.avatar || '',
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
 
-    const token = jwt.sign(
-      { id: mockUser.id, email: mockUser.email, role: mockUser.role },
-      JWT_CONFIG.secret,
-      { expiresIn: JWT_CONFIG.expiresIn }
-    );
+export const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password, companyName, industry } = req.body || {};
 
-    return sendSuccess(res, 'User registered successfully', { user: mockUser, token }, 201);
-  } catch (error) {
-    return sendError(res, error.message, 500);
+  const validation = validateRegisterInput({ name, email, password });
+  if (!validation.isValid) {
+    return sendError(res, 'Validation failed', 400, validation.errors);
   }
-};
 
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const mockUser = {
-      id: 'usr_65f1a2b3c4d5e6f7a8b9c0d1',
-      name: 'Alex Vance',
-      email: email || 'alex@bizmind.ai',
-      role: 'owner',
-      business: {
-        id: 'biz_65f1a2b3c4d5e6f7a8b9c0d2',
-        companyName: 'Apex Growth Dynamics',
-        industry: 'E-Commerce & Digital Commerce',
-        currency: 'USD',
-        monthlyTarget: 150000
-      }
-    };
-
-    const token = jwt.sign(
-      { id: mockUser.id, email: mockUser.email, role: mockUser.role },
-      JWT_CONFIG.secret,
-      { expiresIn: JWT_CONFIG.expiresIn }
-    );
-
-    return sendSuccess(res, 'Logged in successfully', { user: mockUser, token });
-  } catch (error) {
-    return sendError(res, error.message, 500);
+  const normalizedEmail = email.toLowerCase().trim();
+  const existing = await User.findOne({ email: normalizedEmail });
+  if (existing) {
+    return sendError(res, 'A user with this email already exists', 409);
   }
-};
 
-export const getCurrentUserProfile = async (req, res) => {
-  return sendSuccess(res, 'User profile retrieved', {
-    user: req.user || {
-      id: 'usr_65f1a2b3c4d5e6f7a8b9c0d1',
-      name: 'Alex Vance',
-      email: 'alex@bizmind.ai',
-      role: 'owner'
-    }
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  const user = await User.create({
+    name: name.trim(),
+    email: normalizedEmail,
+    password: hashedPassword,
+    role: 'owner',
   });
-};
+
+  // Optionally auto-create a business on registration if details provided.
+  if (companyName) {
+    try {
+      const { default: Business } = await import('../models/Business.js');
+      const business = await Business.create({
+        ownerId: user._id,
+        companyName: companyName.trim(),
+        industry: industry || 'General',
+      });
+      user.businessId = business._id;
+      await user.save();
+    } catch (err) {
+      console.warn('Auto-create business on register failed:', err.message);
+    }
+  }
+
+  const token = generateToken(user._id.toString(), user.email, user.role);
+
+  return sendSuccess(
+    res,
+    'User registered successfully',
+    { user: sanitizeUser(user), token },
+    201
+  );
+});
+
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body || {};
+
+  const validation = validateLoginInput({ email, password });
+  if (!validation.isValid) {
+    return sendError(res, 'Validation failed', 400, validation.errors);
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail }).select('+password');
+  if (!user) {
+    return sendError(res, 'Invalid email or password', 401);
+  }
+
+  const passwordMatches = await bcrypt.compare(password, user.password);
+  if (!passwordMatches) {
+    return sendError(res, 'Invalid email or password', 401);
+  }
+
+  const token = generateToken(user._id.toString(), user.email, user.role);
+
+  return sendSuccess(res, 'Logged in successfully', { user: sanitizeUser(user), token });
+});
+
+export const getCurrentUserProfile = asyncHandler(async (req, res) => {
+  if (!req.user || !req.user._id) {
+    return sendError(res, 'Not authenticated', 401);
+  }
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    return sendError(res, 'User not found', 404);
+  }
+  return sendSuccess(res, 'User profile retrieved', { user: sanitizeUser(user) });
+});

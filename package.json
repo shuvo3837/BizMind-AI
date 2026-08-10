@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.js",
+    "cleanup": "node kill-old.js",
+    "dev": "node server.js",
     "build": "vite build",
-    "start": "node server.js",
+    "start": "node bizmind-server/server.js",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },

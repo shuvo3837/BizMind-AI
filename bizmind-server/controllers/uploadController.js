@@ -1,55 +1,106 @@
-import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import fs from 'fs';
+import path from 'path';
+import { processUpload, parseFileRows } from '../services/fileProcessor.js';
+import { detectDataTypes } from '../services/dataDetector.js';
+import Upload from '../models/Upload.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ok, fail } from '../utils/apiResponse.js';
 
-export const handleFileUpload = async (req, res) => {
+const resolveBusinessId = (req) => req.user?.businessId;
+
+export const uploadFile = asyncHandler(async (req, res) => {
   if (!req.file) {
-    return sendError(res, 'No file uploaded', 400);
+    return fail(res, 'No file was uploaded. Use the multipart "file" field.', 400);
   }
 
-  const fileData = {
-    id: 'upl_' + Date.now(),
-    filename: req.file.filename,
-    originalName: req.file.originalname,
-    fileType: req.file.mimetype || req.file.originalname.split('.').pop(),
-    sizeBytes: req.file.size,
-    recordsCount: Math.floor(Math.random() * 400) + 50,
-    status: 'completed',
-    summary: `Extracted data from ${req.file.originalname}. Identified sales transactions and expense items.`,
-    createdAt: new Date().toISOString()
-  };
+  const businessId = resolveBusinessId(req);
+  if (!businessId) {
+    try { fs.unlinkSync(req.file.path); } catch (e) { /* noop */ }
+    return fail(res, 'No business is linked to this account. Create a business first.', 400);
+  }
 
-  return sendSuccess(res, 'File uploaded and parsed successfully', fileData, 201);
-};
+  try {
+    const result = await processUpload({
+      file: req.file,
+      businessId,
+      userId: req.user._id,
+    });
 
-export const getUploadHistory = async (req, res) => {
-  const uploads = [
-    {
-      id: 'upl_101',
-      originalName: 'Q2_Sales_Report_2026.csv',
-      fileType: 'CSV',
-      sizeBytes: 1245000,
-      recordsCount: 412,
-      status: 'completed',
-      createdAt: '2026-08-01T14:30:00.000Z'
-    },
-    {
-      id: 'upl_102',
-      originalName: 'Operating_Expenses_July.xlsx',
-      fileType: 'Excel',
-      sizeBytes: 856000,
-      recordsCount: 185,
-      status: 'completed',
-      createdAt: '2026-08-04T09:15:00.000Z'
-    },
-    {
-      id: 'upl_103',
-      originalName: 'Inventory_Audit_August.pdf',
-      fileType: 'PDF',
-      sizeBytes: 3420000,
-      recordsCount: 94,
-      status: 'completed',
-      createdAt: '2026-08-06T16:45:00.000Z'
+    return ok(res, `File processed successfully. ${result.recordsProcessed || 0} records extracted.`, {
+      uploadId: result._id,
+      fileType: result.fileType,
+      status: result.status,
+      recordsProcessed: result.recordsProcessed,
+      detectedDataTypes: result.detectedDataTypes || [],
+      summary: result.summary || null,
+    });
+  } catch (error) {
+    try { fs.unlinkSync(req.file.path); } catch (e) { /* noop */ }
+    return fail(res, error.message || 'Failed to process uploaded file.', 500);
+  }
+});
+
+export const getUploads = asyncHandler(async (req, res) => {
+  const businessId = resolveBusinessId(req);
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const uploads = await Upload.find({ businessId })
+    .sort({ createdAt: -1 })
+    .select('-filePath')
+    .lean();
+
+  return ok(res, 'Uploads retrieved.', uploads);
+});
+
+export const getUploadById = asyncHandler(async (req, res) => {
+  const businessId = resolveBusinessId(req);
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const upload = await Upload.findOne({ _id: req.params.id, businessId })
+    .select('-filePath')
+    .lean();
+
+  if (!upload) return fail(res, 'Upload not found.', 404);
+  return ok(res, 'Upload retrieved.', upload);
+});
+
+export const previewFile = asyncHandler(async (req, res) => {
+  const businessId = resolveBusinessId(req);
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  if (!req.file) return fail(res, 'No file uploaded for preview.', 400);
+
+  try {
+    const rows = await parseFileRows(req.file.path, req.file.originalname);
+    const detected = detectDataTypes(rows);
+    const preview = (rows || []).slice(0, 25);
+
+    try { fs.unlinkSync(req.file.path); } catch (e) { /* noop */ }
+
+    return ok(res, 'File preview generated.', {
+      totalRows: (rows || []).length,
+      preview,
+      detectedDataTypes: detected,
+    });
+  } catch (error) {
+    try { fs.unlinkSync(req.file.path); } catch (e) { /* noop */ }
+    return fail(res, error.message || 'Failed to preview file.', 500);
+  }
+});
+
+export const deleteUpload = asyncHandler(async (req, res) => {
+  const businessId = resolveBusinessId(req);
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const upload = await Upload.findOne({ _id: req.params.id, businessId });
+  if (!upload) return fail(res, 'Upload not found.', 404);
+
+  try {
+    if (upload.filePath && fs.existsSync(upload.filePath)) {
+      fs.unlinkSync(upload.filePath);
     }
-  ];
+  } catch (e) { /* noop */ }
 
-  return sendSuccess(res, 'Upload history retrieved', uploads);
-};
+  await upload.deleteOne();
+  return ok(res, 'Upload deleted.', { id: req.params.id });
+});
