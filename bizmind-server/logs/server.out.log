@@ -356,3 +356,22 @@
 [2m4:31:06 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\layout\Header.jsx, /bizmind-client/src/styles/index.css[22m
 [2026-08-11T21:31:06.964Z] GET /@fs/C:/projects/New%20folder/BizMind-AI/bizmind-client/src/components/layout/Header.jsx?t=1786483866879 -> 200 (76ms) user=anonymous
 [2026-08-11T21:31:07.113Z] GET /bizmind-client/src/styles/index.css?t=1786483866879 -> 200 (146ms) user=anonymous
+[2026-08-11T21:31:45.583Z] GET /api/business/profile -> 304 (111ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:31:45.691Z] GET /api/business/profile -> 304 (105ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:32:34.870Z] PUT /api/business/profile -> 200 (173ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:32:38.976Z] GET /api/analytics/dashboard -> 304 (109ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:32:39.092Z] GET /api/analytics/dashboard -> 304 (103ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:32:44.743Z] GET /api/ai/recommendations -> 200 (5873ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:32:47.229Z] GET /api/ai/recommendations -> 200 (2483ms) user=6a7b7269f1a76c8727755524
+[2m4:33:50 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/bizmind-client/src/context/BusinessContext.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:33:50 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\pages\Settings\BusinessProfilePage.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:33:50 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\layout\Sidebar.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:33:51 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\pages\Settings\BusinessProfilePage.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:33:52 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\layout\Header.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:33:52 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\layout\Sidebar.jsx, /bizmind-client/src/styles/index.css[22m
+[2026-08-11T21:33:59.211Z] GET /bizmind-client/src/styles/index.css?t=1786484030395 -> 200 (67ms) user=anonymous
+[2026-08-11T21:33:59.215Z] GET /bizmind-client/src/context/BusinessContext.jsx?t=1786484030395 -> 200 (72ms) user=anonymous
+[2m4:33:59 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/bizmind-client/src/context/BusinessContext.jsx[22m Could not Fast Refresh ("BusinessContext" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m4:33:59 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/bizmind-client/src/App.jsx, /bizmind-client/src/styles/index.css, /@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\pages\Settings\BusinessProfilePage.jsx, /@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\layout\Header.jsx[22m
+[2026-08-11T21:33:59.302Z] GET /bizmind-client/src/styles/index.css?t=1786484030463 -> 200 (71ms) user=anonymous
+[2026-08-11T21:33:59.306Z] GET /@fs/C:/projects/New%20folder/BizMind-AI/bizmind-client/src/pages/Settings/BusinessProfilePage.jsx?t=1786484030463 -> 200 (76ms) user=anonymous
