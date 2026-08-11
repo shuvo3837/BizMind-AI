@@ -5,7 +5,6 @@ import Expense from '../models/Expense.js';
 import Product from '../models/Product.js';
 import Inventory from '../models/Inventory.js';
 import { calculateAnalytics } from '../services/analyticsService.js';
-import { generateAiResponse, isAiConfigured } from '../services/aiService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ok, fail } from '../utils/apiResponse.js';
 
@@ -50,12 +49,6 @@ export const generateDatasetReport = asyncHandler(async (req, res) => {
     inventoryStatus: inventory.slice(0, 5),
   };
 
-  let aiInsights = null;
-  if (isAiConfigured()) {
-    const ai = await generateAiResponse({ analytics }, `Generate a concise executive report based ONLY on the data for ${upload.originalName}.`);
-    if (ai.ok) aiInsights = ai.text;
-  }
-
   const report = await Report.create({
     businessId,
     userId: req.user._id,
@@ -74,7 +67,7 @@ export const generateDatasetReport = asyncHandler(async (req, res) => {
       revenueByCategory: analytics.revenueByCategory || [],
       expenseByCategory: analytics.expenseByCategory || [],
     },
-    aiInsights: aiInsights || 'AI insights were not generated.',
+    aiInsights: '',
     status: 'completed',
   });
 
@@ -82,63 +75,48 @@ export const generateDatasetReport = asyncHandler(async (req, res) => {
 });
 
 export const generateReport = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
   const businessId = req.user?.businessId;
-  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+  if (!userId || !businessId) return fail(res, 'No business linked to this user.', 400);
 
   const period = (req.body.period || 'monthly').toLowerCase();
   const days = PERIOD_PRESETS[period] || 30;
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const analytics = await calculateAnalytics(req.user?._id, businessId);
+  const analytics = await calculateAnalytics(userId, businessId);
 
-  const hasData =
-    (analytics.totalSales || 0) + (analytics.totalProducts || 0) + (analytics.totalExpenses || 0) > 0 ||
-    (Array.isArray(analytics.inventoryStatus) ? analytics.inventoryStatus.length : (analytics.inventoryCount || 0)) > 0;
+  // Use the real shape returned by calculateAnalytics.
+  const counts = analytics.counts || {};
+  const totalRecords =
+    (counts.sales || 0) +
+    (counts.expenses || 0) +
+    (counts.products || 0) +
+    (counts.inventory || 0);
 
-  if (!hasData) {
-    return fail(res, 'Cannot generate a report — no business data available. Upload data first.', 400);
+  if (totalRecords === 0) {
+    return fail(res, 'No business data available. Upload your data to generate a report.', 400);
   }
 
-  let aiInsights = null;
-  if (isAiConfigured()) {
-    const ai = await generateAiResponse(
-      {
-        period,
-        dateRange: { from: startDate, to: new Date() },
-        analytics: {
-          revenue: analytics.totalRevenue,
-          profit: analytics.totalProfit,
-          expenses: analytics.totalExpenses,
-          sales: analytics.totalSales,
-          topProducts: analytics.topProducts,
-          revenueByCategory: analytics.revenueByCategory,
-          expenseByCategory: analytics.expenseByCategory,
-        },
-      },
-      `Generate a concise executive ${period} business report based ONLY on the data above.`
-    );
-    if (ai.ok) aiInsights = ai.text;
-  }
-
+  // BizMind spec: no AI-generated dummy figures. Use only DB-derived numbers.
   const report = await Report.create({
     businessId,
-    userId: req.user._id,
-    title: req.body.title || `${period.charAt(0).toUpperCase() + period.slice(1)} Business Report`,
+    userId,
+    title: req.body.title || 'BizMind AI Business Analysis Report',
     reportType: req.body.reportType || 'Executive Summary',
     period,
     startDate,
     endDate: new Date(),
     summary: {
-      totalRevenue: analytics.totalRevenue,
-      totalProfit: analytics.totalProfit,
-      totalExpenses: analytics.totalExpenses,
-      totalSales: analytics.totalSales,
-      profitMargin: analytics.profitMargin,
-      topProducts: analytics.topProducts?.slice(0, 5) || [],
-      revenueByCategory: analytics.revenueByCategory || [],
-      expenseByCategory: analytics.expenseByCategory || [],
+      totalRevenue: analytics.totalRevenue || 0,
+      totalProfit: analytics.totalProfit || 0,
+      totalExpenses: analytics.totalExpenses || 0,
+      totalSales: analytics.totalSales || 0,
+      profitMargin: analytics.profitMargin || 0,
+      topProducts: (analytics.topProducts || []).slice(0, 5),
+      revenueByCategory: analytics.salesByCategory || [],
+      expenseByCategory: analytics.expenseAllocation || [],
     },
-    aiInsights: aiInsights || 'AI insights were not generated (no provider configured or empty dataset).',
+    aiInsights: '',
     status: 'completed',
   });
 

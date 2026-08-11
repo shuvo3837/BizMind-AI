@@ -1,84 +1,130 @@
 {
-  "startedAt": "2026-08-10T20:20:46.807Z",
+  "startedAt": "2026-08-11T19:00:03.854Z",
   "events": [
     {
-      "at": "2026-08-10T20:20:46.811Z",
+      "at": "2026-08-11T19:00:03.858Z",
       "name": "boot",
       "base": "http://127.0.0.1:4000",
-      "csv": "C:\\projects\\New folder\\BizMind-AI\\sample-test.csv"
+      "userAEmail": "iso-a-msp0z0r3@bizmind.test",
+      "userBEmail": "iso-b-msp0z0r3@bizmind.test"
     },
     {
-      "at": "2026-08-10T20:20:47.251Z",
-      "name": "upload",
-      "status": 200,
-      "summary": {
-        "success": true,
-        "message": "File processed successfully. 6 records extracted.",
-        "data": {
-          "uploadId": "6a7a329ef56bc7ef83cf99cb",
-          "fileType": "csv",
-          "status": "completed",
-          "recordsProcessed": 6,
-          "detectedDataTypes": [
-            "sales",
-            "products",
-            "cost",
-            "inventory"
-          ],
-          "summary": {
-            "sales": 6,
-            "expenses": 0,
-            "products": 6,
-            "inventory": 6
-          }
-        }
+      "at": "2026-08-11T19:00:03.861Z",
+      "name": "csv-prepared",
+      "csvA": "C:\\projects\\New folder\\BizMind-AI\\sample-test.csv",
+      "csvB": "C:\\projects\\New folder\\BizMind-AI\\bizmind-server\\tests\\isolation-userB.csv"
+    },
+    {
+      "at": "2026-08-11T19:00:05.401Z",
+      "name": "registered",
+      "A": {
+        "id": "6a7b71347758906e4bba7198",
+        "source": "register"
+      },
+      "B": {
+        "id": "6a7b71357758906e4bba719e",
+        "source": "register"
       }
     },
     {
-      "at": "2026-08-10T20:20:47.311Z",
-      "name": "dashboard",
-      "status": 200,
-      "hasData": true,
-      "kpis": {
-        "totalRevenue": 0,
-        "totalProfit": -466,
-        "totalCost": 466,
-        "totalSales": 12,
-        "totalUnitsSold": 204,
-        "totalProducts": 6,
-        "totalExpenses": 0,
-        "totalInventoryValue": 18345,
-        "profitMargin": 0,
-        "averageOrderValue": 0
-      }
-    },
-    {
-      "at": "2026-08-10T20:20:47.863Z",
+      "at": "2026-08-11T19:00:07.134Z",
       "name": "connected",
-      "host": "ac-potc32c-shard-00-02.8c01ywb.mongodb.net",
+      "host": "ac-potc32c-shard-00-01.8c01ywb.mongodb.net",
       "db": "bizmind_ai"
     },
     {
-      "at": "2026-08-10T20:20:48.922Z",
-      "name": "db",
-      "ownerId": "000000000000000000000001",
-      "total": {
-        "sales": 12,
-        "expenses": 0,
-        "products": 12,
-        "inventory": 12,
-        "uploads": 4
+      "at": "2026-08-11T19:00:08.159Z",
+      "name": "cleaned",
+      "ok": true
+    },
+    {
+      "at": "2026-08-11T19:00:08.620Z",
+      "name": "upload-A",
+      "status": 200,
+      "dataset": "6a7b71387758906e4bba71a4",
+      "error": "File processed successfully. 6 records extracted."
+    },
+    {
+      "at": "2026-08-11T19:00:08.960Z",
+      "name": "upload-B",
+      "status": 200,
+      "dataset": "6a7b71387758906e4bba71bd",
+      "error": "File processed successfully. 8 records extracted."
+    },
+    {
+      "at": "2026-08-11T19:00:10.061Z",
+      "name": "dashboards",
+      "A": {
+        "status": 200,
+        "hasData": true,
+        "revenue": 4768.98
+      },
+      "B": {
+        "status": 200,
+        "hasData": true,
+        "revenue": 4620
       }
     },
     {
-      "at": "2026-08-10T20:20:48.923Z",
-      "name": "verdict",
-      "ok": true
+      "at": "2026-08-11T19:00:10.197Z",
+      "name": "cross-tenant-dataset",
+      "status": 404
     },
     {
-      "at": "2026-08-10T20:20:48.929Z",
+      "at": "2026-08-11T19:00:10.763Z",
+      "name": "raw-counts",
+      "A": {
+        "sales": 6,
+        "products": 6,
+        "inventory": 6
+      },
+      "B": {
+        "sales": 8,
+        "products": 8,
+        "inventory": 0
+      }
+    },
+    {
+      "at": "2026-08-11T19:00:11.158Z",
+      "name": "uploads-lists",
+      "A": 1,
+      "B": 1
+    },
+    {
+      "at": "2026-08-11T19:00:11.285Z",
+      "name": "cross-tenant-upload",
+      "status": 404,
+      "ok": false
+    },
+    {
+      "at": "2026-08-11T19:00:11.887Z",
+      "name": "db-totals",
+      "A": {
+        "sales": 6,
+        "expenses": 0,
+        "products": 6,
+        "inventory": 6,
+        "uploads": 1
+      },
+      "B": {
+        "sales": 8,
+        "expenses": 0,
+        "products": 8,
+        "inventory": 0,
+        "uploads": 1
+      }
+    },
+    {
+      "at": "2026-08-11T19:00:12.067Z",
+      "name": "verdict",
+      "ok": true,
+      "failures": 0
+    },
+    {
+      "at": "2026-08-11T19:00:12.073Z",
       "name": "done",
-      "ok": true
+      "ok": true,
+      "failures": 0
     }
   ]
 }

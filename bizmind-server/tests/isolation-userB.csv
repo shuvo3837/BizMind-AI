@@ -1,0 +1,9 @@
+date,productName,category,quantity,price,revenue
+2026-01-01,UserB-Product 1,UserB-Cat,4,35,140
+2026-01-02,UserB-Product 2,UserB-Cat,5,45,225
+2026-01-03,UserB-Product 3,UserB-Cat,6,55,330
+2026-01-04,UserB-Product 4,UserB-Cat,7,65,455
+2026-01-05,UserB-Product 5,UserB-Cat,8,75,600
+2026-01-06,UserB-Product 6,UserB-Cat,9,85,765
+2026-01-07,UserB-Product 7,UserB-Cat,10,95,950
+2026-01-08,UserB-Product 8,UserB-Cat,11,105,1155
