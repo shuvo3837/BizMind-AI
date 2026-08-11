@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
+const MODEL_CHAIN = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
 let aiInstance = null;
 
 const getGeminiClient = () => {
@@ -20,20 +22,34 @@ export const isGeminiConfigured = () => {
 
 const SYSTEM_INSTRUCTION = `You are the BizMind AI Business Intelligence advisor.
 
-CRITICAL RULES:
-1. Use ONLY the provided business data and calculated analytics. Never invent revenue, products, customers, inventory, expenses, sales, market statistics, or any other business information.
-2. If the required information is unavailable or the dataset is empty, you MUST clearly state: "There is insufficient data to answer this question. Please upload your business data first."
-3. Be specific, actionable, and reference actual numbers from the provided context.
-4. When suggesting strategies, tie each recommendation back to the provided metrics.`;
+RULES:
+1. When the user's verified business data is provided, ALWAYS prioritize and reference the actual numbers from it. Be specific and tie every recommendation back to those metrics.
+2. If the dataset is empty or no business data is provided, you may still answer general business, strategy, finance, marketing, inventory, and operations questions using widely accepted best practices. In that case, clearly note that the answer is general guidance and not tied to the user's specific data.
+3. Never fabricate specific revenue figures, product names, customer counts, or other concrete business facts the user has not provided.`;
 
 const buildPrompt = (context, userPrompt) => {
   const contextBlock = JSON.stringify(context, null, 2);
-  return `Business Data & Calculated Analytics (verified from the user's database):
+  return `Business Data & Calculated Analytics (verified from the user's database). This may be empty if the user has not uploaded data yet.
+
 ${contextBlock}
 
-User Question: ${userPrompt || 'Provide an executive summary, top 3 actionable insights, and key risks based ONLY on the data above.'}
+User Question: ${userPrompt || 'Provide an executive summary, top 3 actionable insights, and key risks. If data is empty, give general business advice instead.'}`;
+};
 
-Respond strictly using the verified data above. Do not invent any values.`;
+// The @google/genai SDK sometimes throws plain objects (not Error instances)
+// with a JSON-stringified `message` field. Normalize so the controller always
+// receives a clean error string.
+const extractErrorMessage = (err) => {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+  if (err.message) return err.message;
+  if (err.error?.message) return err.error.message;
+  if (err.status) return `Gemini API returned status ${err.status}`;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return 'Failed to communicate with Gemini.';
+  }
 };
 
 export const generateBusinessInsights = async (businessData, userPrompt = '') => {
@@ -49,22 +65,43 @@ export const generateBusinessInsights = async (businessData, userPrompt = '') =>
     const ai = getGeminiClient();
     const prompt = buildPrompt(businessData, userPrompt);
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.4,
-        maxOutputTokens: 1024,
-      },
-    });
+    let response;
+    let lastError;
+    for (const modelName of MODEL_CHAIN) {
+      try {
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: [{ text: prompt }],
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.5,
+            maxOutputTokens: 1024,
+          },
+        });
+        break;
+      } catch (modelErr) {
+        lastError = modelErr;
+        const msg = extractErrorMessage(modelErr);
+        // Try the next model only if this one is unavailable (404) or quota (429).
+        if (!/404|429|unavailable|not.found|quota|exhausted/i.test(msg)) {
+          throw modelErr;
+        }
+      }
+    }
+    if (!response) throw lastError || new Error('All Gemini models failed.');
 
-    const text = response.text || response?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text =
+      response?.text ||
+      response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      (Array.isArray(response?.candidates?.[0]?.content?.parts)
+        ? response.candidates[0].content.parts.map((p) => p?.text || '').join('').trim()
+        : '');
+
     if (!text) {
       return {
         ok: false,
         provider: 'gemini',
-        error: 'Empty response from Gemini.',
+        error: `Empty response from Gemini. finishReason=${response?.candidates?.[0]?.finishReason || 'unknown'}`,
       };
     }
 
@@ -78,7 +115,7 @@ export const generateBusinessInsights = async (businessData, userPrompt = '') =>
     return {
       ok: false,
       provider: 'gemini',
-      error: error.message || 'Failed to communicate with Gemini.',
+      error: extractErrorMessage(error),
     };
   }
 };
@@ -112,7 +149,7 @@ Return ONLY a JSON array of records. Each record should contain whichever of the
 If the document does not contain extractable business data, return an empty array []. Do NOT fabricate any data.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: ACTIVE_MODEL,
       contents: [
         { text: prompt },
         { inlineData: { mimeType: mimeType || 'image/png', data: base64 } },
@@ -129,12 +166,12 @@ If the document does not contain extractable business data, return an empty arra
       const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
       parsed = JSON.parse(cleaned);
       if (!Array.isArray(parsed)) parsed = [];
-    } catch (err) {
+    } catch {
       parsed = [];
     }
 
     return { ok: true, rows: parsed };
   } catch (error) {
-    return { ok: false, error: error.message || 'Gemini vision failed' };
+    return { ok: false, error: extractErrorMessage(error) };
   }
 };

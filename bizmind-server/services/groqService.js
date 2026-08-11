@@ -5,12 +5,10 @@ const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 const systemPrompt = `You are the BizMind AI Business Intelligence assistant.
 
-CRITICAL RULES:
-1. Use ONLY the provided business data and calculated analytics.
-2. NEVER invent revenue, products, customers, inventory, expenses, sales, market statistics, or any other business information.
-3. If the required information is unavailable or the dataset is empty, you MUST clearly state: "There is insufficient data to answer this question."
-4. Be precise, concise, and actionable. Reference the actual numbers provided.
-5. When suggesting improvements, ground every suggestion in the metrics provided.`;
+RULES:
+1. When the user's verified business data is provided, ALWAYS prioritize and reference the actual numbers from it. Be specific and tie every recommendation back to those metrics.
+2. If the dataset is empty or no business data is provided, you may still answer general business, strategy, finance, marketing, inventory, and operations questions using widely accepted best practices. In that case, clearly note that the answer is general guidance and not tied to the user's specific data.
+3. Never fabricate specific revenue figures, product names, customer counts, or other concrete business facts the user has not provided.`;
 
 export const isGroqConfigured = () => {
   const key = (process.env.GROQ_API_KEY || '').trim();

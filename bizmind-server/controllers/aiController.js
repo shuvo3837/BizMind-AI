@@ -10,8 +10,6 @@ import { ok, fail } from '../utils/apiResponse.js';
 
 export const queryAIChat = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
-  if (!businessId) return fail(res, 'No business linked to this user.', 400);
-
   const prompt = (req.body.prompt || req.body.message || req.body.question || '').trim();
   if (!prompt) return fail(res, 'A prompt is required.', 400);
 
@@ -19,7 +17,33 @@ export const queryAIChat = asyncHandler(async (req, res) => {
     return fail(res, 'No AI provider is configured on the server.', 503);
   }
 
-  const analytics = await calculateAnalytics(req.user?._id, businessId);
+  // Allow general Q&A even when no business is linked to the user. Only load
+  // business analytics when both `user` and `businessId` are present.
+  let analytics = {
+    totalRevenue: 0,
+    totalProfit: 0,
+    totalExpenses: 0,
+    profitMargin: 0,
+    topProducts: [],
+    revenueByCategory: [],
+  };
+  if (businessId && req.user?._id) {
+    try {
+      const computed = await calculateAnalytics(req.user._id, businessId);
+      analytics = {
+        totalRevenue: computed.totalRevenue,
+        totalProfit: computed.totalProfit,
+        totalExpenses: computed.totalExpenses,
+        profitMargin: computed.profitMargin,
+        topProducts: computed.topProducts?.slice(0, 10) || [],
+        revenueByCategory: computed.revenueByCategory || [],
+      };
+    } catch (analyticsErr) {
+      // Swallow analytics errors so the chat still works with general answers.
+      console.warn('[AI chat] analytics lookup failed, falling back to empty dataset:', analyticsErr?.message);
+    }
+  }
+
   const ai = await generateAiResponse(
     {
       metrics: {
@@ -28,8 +52,8 @@ export const queryAIChat = asyncHandler(async (req, res) => {
         totalExpenses: analytics.totalExpenses,
         profitMargin: analytics.profitMargin,
       },
-      topProducts: analytics.topProducts?.slice(0, 10) || [],
-      revenueByCategory: analytics.revenueByCategory || [],
+      topProducts: analytics.topProducts,
+      revenueByCategory: analytics.revenueByCategory,
     },
     prompt
   );

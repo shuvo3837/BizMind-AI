@@ -25,12 +25,21 @@ export const ChatWindow = () => {
 
     try {
       const res = await sendMessage(promptText);
-      const aiReply = res?.reply || res?.message || 'Analyzed data. Your gross margin is steady at 66%. Consider scaling marketing in high-LTV regions.';
-      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), sender: 'ai', text: aiReply }]);
+      const aiReply =
+        res?.data?.text ||
+        res?.reply ||
+        res?.message ||
+        res?.text ||
+        'I could not generate a response. Please try again.';
+      const provider = res?.data?.provider ? ` · via ${res.data.provider}` : '';
+      const finalText = aiReply ? `${aiReply}${provider && /gemini|groq/i.test(provider) ? provider : ''}` : aiReply;
+      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), sender: 'ai', text: finalText }]);
     } catch (err) {
+      const detail = err?.response?.data?.message || err?.message;
+      const fallback = 'I encountered an issue connecting to the Gemini engine. Please verify your GEMINI_API_KEY in secrets.';
       setMessages((prev) => [
         ...prev,
-        { id: (Date.now() + 1).toString(), sender: 'ai', text: 'I encountered an issue connecting to the Gemini engine. Please verify your GEMINI_API_KEY in secrets.' }
+        { id: (Date.now() + 1).toString(), sender: 'ai', text: detail ? `${fallback} (${detail})` : fallback }
       ]);
     }
   };

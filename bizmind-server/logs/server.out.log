@@ -1,6 +1,6 @@
-◇ injected env (12) from .env // tip: ⌘ enable debugging { debug: true }
-◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
-◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (12) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 🎨 Vite middleware mounted. Frontend root: C:\projects\New folder\BizMind-AI
    index.html: C:\projects\New folder\BizMind-AI\index.html
    node_modules: C:\projects\New folder\BizMind-AI\bizmind-client\node_modules
@@ -13,9 +13,90 @@
 
 👉 Open http://localhost:4000 in your browser.
 
-✅ MongoDB Atlas connected: ac-potc32c-shard-00-01.8c01ywb.mongodb.net/bizmind_ai
-✅ MongoDB connected: ac-potc32c-shard-00-01.8c01ywb.mongodb.net/bizmind_ai
-[2026-08-11T19:56:21.228Z] POST /api/auth/register -> 201 (518ms) user=anonymous
-[2026-08-11T19:56:21.497Z] POST /api/business -> 201 (239ms) user=6a7b7e6513c064b67c44e616
-[2026-08-11T19:56:22.292Z] POST /api/upload -> 200 (674ms) user=6a7b7e6513c064b67c44e616
-[2026-08-11T19:56:22.470Z] GET /api/report/list -> 200 (164ms) user=6a7b7e6513c064b67c44e616
+✅ MongoDB Atlas connected: ac-potc32c-shard-00-02.8c01ywb.mongodb.net/bizmind_ai
+✅ MongoDB connected: ac-potc32c-shard-00-02.8c01ywb.mongodb.net/bizmind_ai
+[2026-08-11T21:19:00.017Z] POST /api/auth/register -> 201 (440ms) user=anonymous
+[2026-08-11T21:19:00.078Z] GET /api/ai/status -> 200 (50ms) user=6a7b91c376e8e6c3272dcff9
+[2026-08-11T21:19:07.295Z] POST /api/ai/chat -> 200 (7209ms) user=6a7b91c376e8e6c3272dcff9
+[2026-08-11T21:19:24.435Z] GET /ai-chat -> 200 (57ms) user=anonymous
+[2026-08-11T21:19:25.546Z] GET /@react-refresh -> 304 (22ms) user=anonymous
+[2026-08-11T21:19:25.580Z] GET /bizmind-client/src/main.jsx -> 200 (58ms) user=anonymous
+[2026-08-11T21:19:25.619Z] GET /@vite/client -> 200 (102ms) user=anonymous
+[2026-08-11T21:19:25.703Z] GET /bizmind-client/src/App.jsx -> 200 (80ms) user=anonymous
+[2026-08-11T21:19:25.706Z] GET /bizmind-client/node_modules/vite/dist/client/env.mjs -> 304 (41ms) user=anonymous
+[2026-08-11T21:19:26.079Z] GET /bizmind-client/src/styles/index.css -> 200 (455ms) user=anonymous
+[2026-08-11T21:19:26.221Z] GET /bizmind-client/src/context/AuthContext.jsx -> 200 (140ms) user=anonymous
+[2026-08-11T21:19:26.249Z] GET /bizmind-client/src/context/ThemeContext.jsx -> 200 (43ms) user=anonymous
+[2026-08-11T21:19:26.250Z] GET /bizmind-client/src/routes/AppRoutes.jsx -> 200 (43ms) user=anonymous
+[2026-08-11T21:19:26.250Z] GET /bizmind-client/src/context/BusinessContext.jsx -> 200 (52ms) user=anonymous
+[2026-08-11T21:19:26.260Z] GET /bizmind-client/src/services/authService.js -> 304 (5ms) user=anonymous
+[2026-08-11T21:19:26.261Z] GET /bizmind-client/src/utils/storage.js -> 304 (8ms) user=anonymous
+[2026-08-11T21:19:26.426Z] GET /bizmind-client/src/pages/Landing/LandingPage.jsx -> 200 (168ms) user=anonymous
+[2026-08-11T21:19:26.442Z] GET /bizmind-client/src/pages/Auth/LoginPage.jsx -> 200 (184ms) user=anonymous
+[2026-08-11T21:19:26.443Z] GET /bizmind-client/src/pages/Auth/RegisterPage.jsx -> 200 (180ms) user=anonymous
+[2026-08-11T21:19:26.476Z] GET /bizmind-client/src/pages/Upload/UploadPage.jsx -> 200 (57ms) user=anonymous
+[2026-08-11T21:19:26.509Z] GET /bizmind-client/src/pages/Analytics/AnalyticsPage.jsx -> 200 (64ms) user=anonymous
+[2026-08-11T21:19:26.510Z] GET /bizmind-client/src/pages/Dashboard/DashboardPage.jsx -> 200 (91ms) user=anonymous
+[2026-08-11T21:19:26.538Z] GET /bizmind-client/src/pages/AIChat/AIChatPage.jsx -> 200 (5ms) user=anonymous
+[2026-08-11T21:19:26.541Z] GET /bizmind-client/src/pages/Reports/ReportsPage.jsx -> 200 (1ms) user=anonymous
+[2026-08-11T21:19:26.549Z] GET /bizmind-client/src/hooks/useAuth.js -> 200 (3ms) user=anonymous
+[2026-08-11T21:19:26.551Z] GET /bizmind-client/src/routes/ProtectedRoute.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.555Z] GET /bizmind-client/src/pages/Settings/SettingsPage.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.559Z] GET /bizmind-client/src/pages/Settings/BusinessProfilePage.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.562Z] GET /bizmind-client/src/pages/NotFound/NotFoundPage.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.566Z] GET /bizmind-client/src/services/businessService.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:26.593Z] GET /bizmind-client/src/services/api.js -> 200 (1ms) user=anonymous
+[2026-08-11T21:19:26.663Z] GET /bizmind-client/src/components/common/Button.jsx -> 200 (57ms) user=anonymous
+[2026-08-11T21:19:26.664Z] GET /bizmind-client/src/layouts/MainLayout.jsx -> 200 (95ms) user=anonymous
+[2026-08-11T21:19:26.838Z] GET /bizmind-client/src/layouts/AuthLayout.jsx -> 200 (269ms) user=anonymous
+[2026-08-11T21:19:26.839Z] GET /bizmind-client/src/components/common/Input.jsx -> 200 (241ms) user=anonymous
+[2026-08-11T21:19:26.844Z] GET /bizmind-client/src/services/uploadService.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:26.854Z] GET /bizmind-client/src/hooks/useUpload.js -> 200 (1ms) user=anonymous
+[2026-08-11T21:19:26.862Z] GET /bizmind-client/src/components/upload/FileDropzone.jsx -> 200 (256ms) user=anonymous
+[2026-08-11T21:19:26.886Z] GET /bizmind-client/src/components/upload/ProcessingProgress.jsx -> 200 (42ms) user=anonymous
+[2026-08-11T21:19:26.887Z] GET /bizmind-client/src/components/common/Alert.jsx -> 200 (53ms) user=anonymous
+[2026-08-11T21:19:26.887Z] GET /bizmind-client/src/layouts/DashboardLayout.jsx -> 200 (318ms) user=anonymous
+[2026-08-11T21:19:26.910Z] GET /bizmind-client/src/components/upload/UploadList.jsx -> 200 (76ms) user=anonymous
+[2026-08-11T21:19:26.947Z] GET /bizmind-client/src/services/analyticsService.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:26.951Z] GET /bizmind-client/src/services/reportService.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:26.953Z] GET /bizmind-client/src/components/charts/SalesChart.jsx -> 200 (1ms) user=anonymous
+[2026-08-11T21:19:26.960Z] GET /bizmind-client/src/components/charts/ExpenseBreakdown.jsx -> 200 (3ms) user=anonymous
+[2026-08-11T21:19:26.962Z] GET /bizmind-client/src/components/charts/RevenueTrend.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.964Z] GET /bizmind-client/src/components/charts/InventoryBarChart.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.967Z] GET /bizmind-client/src/components/common/Card.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.970Z] GET /bizmind-client/src/components/dashboard/SummaryChart.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.975Z] GET /bizmind-client/src/components/ai/ChatWindow.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:26.991Z] GET /bizmind-client/src/components/layout/Navbar.jsx -> 200 (11ms) user=anonymous
+[2026-08-11T21:19:26.994Z] GET /bizmind-client/src/components/dashboard/QuickActions.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:27.000Z] GET /bizmind-client/src/components/dashboard/StatCard.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:27.010Z] GET /bizmind-client/src/components/ai/RecommendationCard.jsx -> 200 (4ms) user=anonymous
+[2026-08-11T21:19:27.012Z] GET /bizmind-client/src/utils/formatters.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:27.014Z] GET /bizmind-client/src/services/aiService.js -> 304 (0ms) user=anonymous
+[2026-08-11T21:19:27.029Z] GET /bizmind-client/src/components/layout/Footer.jsx -> 200 (5ms) user=anonymous
+[2026-08-11T21:19:27.070Z] GET /bizmind-client/src/components/common/Badge.jsx -> 200 (32ms) user=anonymous
+[2026-08-11T21:19:27.081Z] GET /bizmind-client/src/components/ai/PromptSuggestions.jsx -> 200 (14ms) user=anonymous
+[2026-08-11T21:19:27.082Z] GET /bizmind-client/src/components/layout/Header.jsx -> 200 (66ms) user=anonymous
+[2026-08-11T21:19:27.083Z] GET /bizmind-client/src/components/common/Spinner.jsx -> 200 (67ms) user=anonymous
+[2026-08-11T21:19:27.084Z] GET /bizmind-client/src/components/layout/Sidebar.jsx -> 200 (67ms) user=anonymous
+[2026-08-11T21:19:27.084Z] GET /bizmind-client/src/components/ai/ChatMessage.jsx -> 200 (46ms) user=anonymous
+[2026-08-11T21:19:27.086Z] GET /bizmind-client/src/hooks/useAI.js -> 200 (0ms) user=anonymous
+[2026-08-11T21:19:27.383Z] GET /api/business/profile -> 304 (106ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:19:27.481Z] GET /api/business/profile -> 304 (95ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:19:35.946Z] POST /api/ai/chat -> 200 (5750ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:19:42.735Z] GET /api/report/list -> 304 (128ms) user=6a7b7269f1a76c8727755524
+[2026-08-11T21:19:42.838Z] GET /api/report/list -> 304 (101ms) user=6a7b7269f1a76c8727755524
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/services/geminiService.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/controllers/aiController.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\ai\ChatWindow.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/logs/probe.ps1[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/services/groqService.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/services/aiService.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/controllers/aiController.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:\projects\New folder\BizMind-AI\bizmind-client\src\components\ai\ChatWindow.jsx, /bizmind-client/src/styles/index.css[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/services/geminiService.js[22m
+[2m4:21:48 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mbizmind-server/services/groqService.js[22m
+[2026-08-11T21:21:49.095Z] GET /business-profile -> 200 (36ms) user=anonymous
+[2026-08-11T21:21:50.584Z] GET /bizmind-client/src/main.jsx?t=1786483308676 -> 200 (2ms) user=anonymous
+[2026-08-11T21:21:50.618Z] GET /@vite/client -> 304 (1ms) user=anonymous
+[2026-08-11T21:21:50.623Z] GET /@react-refresh -> 304 (1ms) user=anonymous
+[2026-08-11T21:21:50.791Z] GET /bizmind-client/src/App.jsx?t=1786483308661 -> 200 (2ms) user=anonymous
