@@ -1,0 +1,18 @@
+◇ injected env (12) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+🎨 Vite middleware mounted. Frontend root: C:\projects\New folder\BizMind-AI
+   index.html: C:\projects\New folder\BizMind-AI\index.html
+   node_modules: C:\projects\New folder\BizMind-AI\bizmind-client\node_modules
+🚀 BizMind AI Backend listening on http://0.0.0.0:4000
+📊 Environment: development
+🤖 Gemini: configured
+⚡ Groq: configured
+🔗 API health: http://0.0.0.0:4000/api/health
+🌐 Frontend:   http://0.0.0.0:4000/ (React app via Vite)
+
+👉 Open http://localhost:4000 in your browser.
+
+✅ MongoDB Atlas connected: ac-potc32c-shard-00-02.8c01ywb.mongodb.net/bizmind_ai
+✅ MongoDB connected: ac-potc32c-shard-00-02.8c01ywb.mongodb.net/bizmind_ai
+[2026-08-11T16:26:58.006Z] GET /api/analytics/dashboard -> 200 (201ms) user=000000000000000000000001

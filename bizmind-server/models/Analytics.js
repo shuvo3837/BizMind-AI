@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 const analyticsSchema = new mongoose.Schema(
   {
-    businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    businessId: { type: mongoose.Schema.Types.ObjectId, ref: 'Business', required: true, index: true },
     period: { type: String, default: 'monthly' }, // daily, weekly, monthly
     totalRevenue: { type: Number, default: 0 },
     totalExpenses: { type: Number, default: 0 },
@@ -14,5 +15,8 @@ const analyticsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+analyticsSchema.index({ userId: 1, businessId: 1 });
+analyticsSchema.index({ userId: 1, businessId: 1, period: 1 });
 
 export default mongoose.models.Analytics || mongoose.model('Analytics', analyticsSchema);

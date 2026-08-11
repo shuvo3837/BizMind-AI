@@ -17,4 +17,6 @@ const chatHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+chatHistorySchema.index({ userId: 1, businessId: 1, sessionId: 1 });
+
 export default mongoose.models.ChatHistory || mongoose.model('ChatHistory', chatHistorySchema);

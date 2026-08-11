@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
-import { normalizeRows } from './dataNormalizer.js';
 
 export const parseCSVFile = async (filePath) => {
   const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -11,5 +10,5 @@ export const parseCSVFile = async (filePath) => {
     trim: true,
     bom: true
   });
-  return normalizeRows(records);
+  return records;
 };

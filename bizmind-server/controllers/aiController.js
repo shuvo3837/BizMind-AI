@@ -1,5 +1,10 @@
 import { calculateAnalytics } from '../services/analyticsService.js';
 import { generateAiResponse, isAiConfigured, getActiveAiProvider } from '../services/aiService.js';
+import Upload from '../models/Upload.js';
+import Sale from '../models/Sale.js';
+import Expense from '../models/Expense.js';
+import Product from '../models/Product.js';
+import Inventory from '../models/Inventory.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ok, fail } from '../utils/apiResponse.js';
 
@@ -14,7 +19,7 @@ export const queryAIChat = asyncHandler(async (req, res) => {
     return fail(res, 'No AI provider is configured on the server.', 503);
   }
 
-  const analytics = await calculateAnalytics(businessId);
+  const analytics = await calculateAnalytics(req.user?._id, businessId);
   const ai = await generateAiResponse(
     {
       metrics: {
@@ -33,11 +38,54 @@ export const queryAIChat = asyncHandler(async (req, res) => {
   return ok(res, 'AI response generated.', { provider: ai.provider, text: ai.text });
 });
 
+export const analyzeDatasetAI = asyncHandler(async (req, res) => {
+  const businessId = req.user?.businessId;
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const datasetId = req.params.datasetId;
+  if (!datasetId) return fail(res, 'Dataset ID is required.', 400);
+
+  const upload = await Upload.findOne({ _id: datasetId, businessId, userId: req.user?._id }).lean();
+  if (!upload) return fail(res, 'Dataset not found or access denied.', 404);
+
+  const [sales, expenses, products, inventory] = await Promise.all([
+    Sale.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Expense.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Product.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Inventory.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+  ]);
+
+  const totalRevenue = sales.reduce((sum, item) => sum + (item.revenue || 0), 0);
+  const totalExpenses = expenses.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalProfit = totalRevenue - totalExpenses;
+  const profitMargin = totalRevenue > 0 ? Number(((totalProfit / totalRevenue) * 100).toFixed(2)) : 0;
+
+  const analytics = {
+    revenue: totalRevenue,
+    expenses: totalExpenses,
+    profit: totalProfit,
+    profitMargin,
+    orders: sales.length,
+    quantity: sales.reduce((sum, item) => sum + (item.quantity || 0), 0),
+    topProducts: products.slice(0, 5),
+    inventoryStatus: inventory.slice(0, 5),
+  };
+
+  const ai = await generateAiResponse(analytics, 'Based ONLY on the verified data above, produce concise business insights with a short executive summary, key insights, recommendations, and risks.');
+  if (!ai.ok) return fail(res, ai.error || 'AI provider failed.', 503);
+
+  return ok(res, 'Dataset AI analysis generated.', {
+    success: true,
+    dataset: { id: upload._id, fileName: upload.originalName },
+    summary: ai.text,
+  });
+});
+
 export const getAIRecommendations = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const analytics = await calculateAnalytics(businessId);
+  const analytics = await calculateAnalytics(req.user?._id, businessId);
   const hasData =
     (analytics.totalSales || 0) + (analytics.totalProducts || 0) + (analytics.totalExpenses || 0) > 0 ||
     (Array.isArray(analytics.inventoryStatus) ? analytics.inventoryStatus.length : (analytics.inventoryCount || 0)) > 0;

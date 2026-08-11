@@ -2,7 +2,7 @@ import Report from '../models/Report.js';
 import { calculateAnalytics } from './analyticsService.js';
 
 export const generateReportFromBusiness = async (businessId, userId, options = {}) => {
-  const analytics = await calculateAnalytics(businessId);
+  const analytics = await calculateAnalytics(userId, businessId);
   const title = options.title || `Business Performance Report ${new Date().toISOString().slice(0, 10)}`;
   const report = await Report.create({
     businessId,

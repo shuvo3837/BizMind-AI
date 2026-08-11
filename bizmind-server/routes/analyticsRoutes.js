@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getDashboardAnalytics,
+  getDatasetAnalytics,
   getDeepAnalytics,
   getSummary,
   getRevenue,
@@ -23,6 +24,7 @@ router.use(protect);
 
 router.get('/overview', getOverview);
 router.get('/dashboard', getDashboardAnalytics);
+router.get('/dataset/:datasetId', getDatasetAnalytics);
 router.get('/deep', getDeepAnalytics);
 router.get('/summary', getSummary);
 router.get('/revenue', getRevenueAnalytics);

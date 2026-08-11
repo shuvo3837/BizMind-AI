@@ -6,12 +6,16 @@ import { ProcessingProgress } from '../../components/upload/ProcessingProgress.j
 import { useUpload } from '../../hooks/useUpload.js';
 import { Alert } from '../../components/common/Alert.jsx';
 import { uploadService } from '../../services/uploadService.js';
+import { analyticsService } from '../../services/analyticsService.js';
+import { reportService } from '../../services/reportService.js';
 
 export const UploadPage = () => {
   const { upload, uploading, progress, result, error } = useUpload();
   const [currentFile, setCurrentFile] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState(null);
+  const [busyActionId, setBusyActionId] = useState(null);
 
   const refreshHistory = async () => {
     setHistoryLoading(true);
@@ -49,8 +53,39 @@ export const UploadPage = () => {
     }
   };
 
+  const handleViewAnalysis = async (id) => {
+    setBusyActionId(id);
+    setActionMessage(null);
+    try {
+      const res = await analyticsService.getDatasetData(id);
+      const payload = res?.data || res;
+      const summary = payload?.kpis ? `Revenue: $${Number(payload.kpis.revenue || 0).toLocaleString()} • Profit: $${Number(payload.kpis.profit || 0).toLocaleString()}` : 'Dataset examined successfully.';
+      setActionMessage({ type: 'success', text: `Analysis ready for ${payload?.dataset?.fileName || 'selected dataset'} — ${summary}` });
+    } catch (e) {
+      setActionMessage({ type: 'error', text: e?.message || 'Unable to load dataset analysis.' });
+    } finally {
+      setBusyActionId(null);
+    }
+  };
+
+  const handleGenerateReport = async (id) => {
+    setBusyActionId(id);
+    setActionMessage(null);
+    try {
+      const res = await reportService.generateDatasetReport(id, { title: 'Dataset Report' });
+      const payload = res?.data || res;
+      setActionMessage({ type: 'success', text: payload?.title ? `Report created: ${payload.title}` : 'Dataset report generated successfully.' });
+      await refreshHistory();
+    } catch (e) {
+      setActionMessage({ type: 'error', text: e?.message || 'Unable to generate report for dataset.' });
+    } finally {
+      setBusyActionId(null);
+    }
+  };
+
   const recordsCount = result?.recordsProcessed ?? result?.summary?.total ?? 0;
-  const fileName = result?.originalName || currentFile?.name;
+  const fileName = result?.fileName || result?.originalName || currentFile?.name;
+  const uploadMessage = result?.message || (result?.success ? 'Upload completed.' : null);
 
   return (
     <DashboardLayout title="Upload Data & Intelligence Processing">
@@ -64,11 +99,20 @@ export const UploadPage = () => {
         {result && (
           <Alert
             type="success"
-            message={`File "${fileName}" successfully processed! Extracted ${recordsCount} data entries.`}
+            message={uploadMessage || `File "${fileName}" successfully processed! Extracted ${recordsCount} data entries.`}
           />
         )}
 
-        <UploadList uploads={history} loading={historyLoading} onDelete={handleDelete} />
+        {actionMessage && <Alert type={actionMessage.type} message={actionMessage.text} />}
+
+        <UploadList
+          uploads={history}
+          loading={historyLoading}
+          onDelete={handleDelete}
+          onViewAnalysis={handleViewAnalysis}
+          onGenerateReport={handleGenerateReport}
+          busyActionId={busyActionId}
+        />
       </div>
     </DashboardLayout>
   );

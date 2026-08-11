@@ -11,15 +11,18 @@ export const useUpload = () => {
     setUploading(true);
     setProgress(20);
     setError(null);
+    setResult(null);
     try {
-      setTimeout(() => setProgress(60), 300);
+      setProgress(40);
       const res = await uploadService.uploadFile(file);
+      const payload = res?.data || res;
       setProgress(100);
-      setResult(res.data);
-      return res.data;
+      setResult(payload);
+      return payload;
     } catch (err) {
-      setError(err.message || 'File upload failed');
-      throw err;
+      const message = err?.response?.data?.message || err?.message || 'File upload failed';
+      setError(message);
+      throw new Error(message);
     } finally {
       setUploading(false);
     }

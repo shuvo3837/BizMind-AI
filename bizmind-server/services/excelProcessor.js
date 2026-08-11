@@ -1,5 +1,4 @@
 import xlsx from 'xlsx';
-import { normalizeRows } from './dataNormalizer.js';
 
 export const parseExcelFile = async (filePath) => {
   const workbook = xlsx.readFile(filePath, { cellDates: true, cellNF: true });
@@ -14,5 +13,5 @@ export const parseExcelFile = async (filePath) => {
     raw: false,
     dateNF: 'yyyy-mm-dd'
   });
-  return normalizeRows(rows);
+  return rows;
 };

@@ -19,5 +19,6 @@ const inventorySchema = new mongoose.Schema(
 );
 
 inventorySchema.index({ businessId: 1, productName: 1, sku: 1 });
+inventorySchema.index({ userId: 1, businessId: 1 });
 
 export default mongoose.models.Inventory || mongoose.model('Inventory', inventorySchema);

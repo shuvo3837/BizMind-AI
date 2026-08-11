@@ -27,12 +27,17 @@ export const uploadFile = asyncHandler(async (req, res) => {
     });
 
     return ok(res, `File processed successfully. ${result.recordsProcessed || 0} records extracted.`, {
+      success: true,
+      datasetId: result._id,
       uploadId: result._id,
+      fileName: req.file.originalname,
       fileType: result.fileType,
       status: result.status,
+      records: result.recordsProcessed,
       recordsProcessed: result.recordsProcessed,
       detectedDataTypes: result.detectedDataTypes || [],
       summary: result.summary || null,
+      message: `File processed successfully. ${result.recordsProcessed || 0} records extracted.`,
     });
   } catch (error) {
     try { fs.unlinkSync(req.file.path); } catch (e) { /* noop */ }
@@ -44,7 +49,7 @@ export const getUploads = asyncHandler(async (req, res) => {
   const businessId = resolveBusinessId(req);
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const uploads = await Upload.find({ businessId })
+  const uploads = await Upload.find({ businessId, userId: req.user._id })
     .sort({ createdAt: -1 })
     .select('-filePath')
     .lean();
@@ -56,7 +61,7 @@ export const getUploadById = asyncHandler(async (req, res) => {
   const businessId = resolveBusinessId(req);
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const upload = await Upload.findOne({ _id: req.params.id, businessId })
+  const upload = await Upload.findOne({ _id: req.params.id, businessId, userId: req.user._id })
     .select('-filePath')
     .lean();
 
@@ -92,7 +97,7 @@ export const deleteUpload = asyncHandler(async (req, res) => {
   const businessId = resolveBusinessId(req);
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const upload = await Upload.findOne({ _id: req.params.id, businessId });
+  const upload = await Upload.findOne({ _id: req.params.id, businessId, userId: req.user._id });
   if (!upload) return fail(res, 'Upload not found.', 404);
 
   try {

@@ -18,4 +18,7 @@ const uploadSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+uploadSchema.index({ userId: 1, businessId: 1 });
+uploadSchema.index({ userId: 1, businessId: 1, createdAt: -1 });
+
 export default mongoose.models.Upload || mongoose.model('Upload', uploadSchema);

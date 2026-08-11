@@ -1,0 +1,84 @@
+{
+  "startedAt": "2026-08-10T20:20:46.807Z",
+  "events": [
+    {
+      "at": "2026-08-10T20:20:46.811Z",
+      "name": "boot",
+      "base": "http://127.0.0.1:4000",
+      "csv": "C:\\projects\\New folder\\BizMind-AI\\sample-test.csv"
+    },
+    {
+      "at": "2026-08-10T20:20:47.251Z",
+      "name": "upload",
+      "status": 200,
+      "summary": {
+        "success": true,
+        "message": "File processed successfully. 6 records extracted.",
+        "data": {
+          "uploadId": "6a7a329ef56bc7ef83cf99cb",
+          "fileType": "csv",
+          "status": "completed",
+          "recordsProcessed": 6,
+          "detectedDataTypes": [
+            "sales",
+            "products",
+            "cost",
+            "inventory"
+          ],
+          "summary": {
+            "sales": 6,
+            "expenses": 0,
+            "products": 6,
+            "inventory": 6
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-08-10T20:20:47.311Z",
+      "name": "dashboard",
+      "status": 200,
+      "hasData": true,
+      "kpis": {
+        "totalRevenue": 0,
+        "totalProfit": -466,
+        "totalCost": 466,
+        "totalSales": 12,
+        "totalUnitsSold": 204,
+        "totalProducts": 6,
+        "totalExpenses": 0,
+        "totalInventoryValue": 18345,
+        "profitMargin": 0,
+        "averageOrderValue": 0
+      }
+    },
+    {
+      "at": "2026-08-10T20:20:47.863Z",
+      "name": "connected",
+      "host": "ac-potc32c-shard-00-02.8c01ywb.mongodb.net",
+      "db": "bizmind_ai"
+    },
+    {
+      "at": "2026-08-10T20:20:48.922Z",
+      "name": "db",
+      "ownerId": "000000000000000000000001",
+      "total": {
+        "sales": 12,
+        "expenses": 0,
+        "products": 12,
+        "inventory": 12,
+        "uploads": 4
+      }
+    },
+    {
+      "at": "2026-08-10T20:20:48.923Z",
+      "name": "verdict",
+      "ok": true
+    },
+    {
+      "at": "2026-08-10T20:20:48.929Z",
+      "name": "done",
+      "ok": true
+    }
+  ]
+}

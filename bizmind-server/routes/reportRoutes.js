@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   generateReport,
+  generateDatasetReport,
   getReportsList,
   getReportById,
   deleteReport,
@@ -13,6 +14,7 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/generate', generateReport);
+router.post('/dataset/:datasetId', generateDatasetReport);
 router.get('/list', getReportsList);
 router.get('/', getReportsList);
 router.get('/:id/download', downloadReport);

@@ -20,5 +20,6 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ businessId: 1, name: 1, category: 1 });
+productSchema.index({ userId: 1, businessId: 1 });
 
 export default mongoose.models.Product || mongoose.model('Product', productSchema);

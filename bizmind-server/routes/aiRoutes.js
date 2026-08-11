@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   queryAIChat,
+  analyzeDatasetAI,
   getAIRecommendations,
   getAIStatus,
 } from '../controllers/aiController.js';
@@ -11,6 +12,7 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/chat', queryAIChat);
+router.post('/analyze/:datasetId', analyzeDatasetAI);
 router.get('/recommendations', getAIRecommendations);
 router.get('/status', getAIStatus);
 

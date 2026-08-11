@@ -10,6 +10,8 @@ const saleSchema = new mongoose.Schema(
     productName: { type: String, required: true, trim: true, index: true },
     sku: { type: String, default: null, index: true },
     customer: { type: String, default: null, index: true },
+    region: { type: String, default: null, index: true },
+    orderId: { type: String, default: null, index: true },
     category: { type: String, default: 'General', index: true },
     quantity: { type: Number, default: 0 },
     unitPrice: { type: Number, default: 0 },
@@ -21,5 +23,7 @@ const saleSchema = new mongoose.Schema(
 );
 
 saleSchema.index({ businessId: 1, date: -1 });
+saleSchema.index({ userId: 1, businessId: 1 });
+saleSchema.index({ userId: 1, businessId: 1, date: -1 });
 
 export default mongoose.models.Sale || mongoose.model('Sale', saleSchema);

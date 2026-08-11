@@ -2,15 +2,26 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from '../common/Card.jsx';
 
-export const SummaryChart = ({ data = [] }) => {
-  const hasData = Array.isArray(data) && data.length > 0;
+export const SummaryChart = ({ data = [], revenueTrend = [], profitTrend = [] }) => {
+  const chartData = Array.isArray(data) && data.length > 0
+    ? data
+    : (Array.isArray(revenueTrend) || Array.isArray(profitTrend)
+      ? (revenueTrend.length > 0 || profitTrend.length > 0
+        ? Array.from(new Set([...revenueTrend.map((item) => item.period || item.month || item.date), ...profitTrend.map((item) => item.period || item.month || item.date)])).map((period) => ({
+            period,
+            revenue: revenueTrend.find((item) => (item.period || item.month || item.date) === period)?.revenue || 0,
+            profit: profitTrend.find((item) => (item.period || item.month || item.date) === period)?.profit || 0,
+          }))
+        : [])
+      : []);
+  const hasData = chartData.length > 0;
 
   return (
     <Card title="Revenue & Profit by Period" subtitle="Aggregated from your uploaded sales data">
       <div className="h-72 w-full mt-4 flex items-center justify-center">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />

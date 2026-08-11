@@ -15,7 +15,7 @@ export const postChatMessage = asyncHandler(async (req, res) => {
     return fail(res, 'No AI provider is configured on the server. Set GEMINI_API_KEY or GROQ_API_KEY.', 503);
   }
 
-  const analytics = await calculateAnalytics(businessId);
+  const analytics = await calculateAnalytics(req.user?._id, businessId);
   const hasData =
     (analytics.totalSales || 0) + (analytics.totalProducts || 0) + (analytics.totalExpenses || 0) > 0 ||
     (Array.isArray(analytics.inventoryStatus) ? analytics.inventoryStatus.length : (analytics.inventoryCount || 0)) > 0;

@@ -51,7 +51,22 @@ const buildProductKey = (row) =>
 const buildInventoryKey = (row) =>
   `${row.productName || 'unknown'}|${row.sku || ''}|${row.category || 'uncategorized'}`;
 
-const buildSaleDocs = (rows, businessId, uploadId) => {
+// Coerce an incoming id (string or ObjectId) to a real ObjectId so it matches
+// the ObjectId-typed schema. Throws a clear error if it can't be coerced.
+const toObjectId = (value, label) => {
+  if (value == null) {
+    throw new Error(`[fileProcessor] Missing required ${label} for document build.`);
+  }
+  if (value instanceof mongoose.Types.ObjectId) return value;
+  if (mongoose.Types.ObjectId.isValid(value)) {
+    return new mongoose.Types.ObjectId(String(value));
+  }
+  throw new Error(`[fileProcessor] Invalid ${label} (${value}); cannot cast to ObjectId.`);
+};
+
+const buildSaleDocs = (rows, businessId, userId, uploadId) => {
+  const bizId = toObjectId(businessId, 'businessId');
+  const ownerId = toObjectId(userId, 'userId');
   const sales = [];
   rows.forEach((row) => {
     const hasSale = row.quantity != null || row.unitPrice != null || row.revenue != null;
@@ -64,12 +79,16 @@ const buildSaleDocs = (rows, businessId, uploadId) => {
     const profit = row.profit != null ? row.profit : (revenue != null && cost != null ? revenue - cost : null);
 
     sales.push({
-      businessId,
+      businessId: bizId,
+      userId: ownerId,
       uploadId,
       date: row.date || new Date(),
       productId: row.productId || null,
       productName: row.productName || row.sku || 'Unknown Product',
       category: row.category || 'Uncategorized',
+      customer: row.customer || null,
+      region: row.region || null,
+      orderId: row.orderId || null,
       quantity,
       unitPrice,
       revenue,
@@ -80,14 +99,17 @@ const buildSaleDocs = (rows, businessId, uploadId) => {
   return sales;
 };
 
-const buildExpenseDocs = (rows, businessId, uploadId) => {
+const buildExpenseDocs = (rows, businessId, userId, uploadId) => {
+  const bizId = toObjectId(businessId, 'businessId');
+  const ownerId = toObjectId(userId, 'userId');
   const expenses = [];
   rows.forEach((row) => {
     const hasExpense = row.amount != null && row.revenue == null && row.quantity == null;
     if (!hasExpense) return;
 
     expenses.push({
-      businessId,
+      businessId: bizId,
+      userId: ownerId,
       uploadId,
       date: row.date || new Date(),
       category: row.category || 'Other',
@@ -98,7 +120,9 @@ const buildExpenseDocs = (rows, businessId, uploadId) => {
   return expenses;
 };
 
-const buildProductMap = (rows, businessId, uploadId) => {
+const buildProductMap = (rows, businessId, userId, uploadId) => {
+  const bizId = toObjectId(businessId, 'businessId');
+  const ownerId = toObjectId(userId, 'userId');
   const productMap = {};
   rows.forEach((row) => {
     const hasSale = row.quantity != null || row.unitPrice != null || row.revenue != null;
@@ -107,7 +131,8 @@ const buildProductMap = (rows, businessId, uploadId) => {
     const productKey = buildProductKey(row);
     if (!productMap[productKey]) {
       productMap[productKey] = {
-        businessId,
+        businessId: bizId,
+        userId: ownerId,
         uploadId,
         name: row.productName || row.sku || 'Unknown Product',
         category: row.category || 'Uncategorized',
@@ -129,7 +154,9 @@ const buildProductMap = (rows, businessId, uploadId) => {
   return productMap;
 };
 
-const buildInventoryMap = (rows, businessId, uploadId) => {
+const buildInventoryMap = (rows, businessId, userId, uploadId) => {
+  const bizId = toObjectId(businessId, 'businessId');
+  const ownerId = toObjectId(userId, 'userId');
   const inventoryMap = {};
   rows.forEach((row) => {
     const hasInventory = row.stock != null || row.currentStock != null;
@@ -140,7 +167,8 @@ const buildInventoryMap = (rows, businessId, uploadId) => {
 
     if (!inventoryMap[inventoryKey]) {
       inventoryMap[inventoryKey] = {
-        businessId,
+        businessId: bizId,
+        userId: ownerId,
         uploadId,
         productId: row.productId || null,
         productName: row.productName || row.sku || 'Unknown Product',
@@ -164,13 +192,30 @@ const buildInventoryMap = (rows, businessId, uploadId) => {
 export const processUpload = async ({ file, businessId, userId }) => {
   requireDb();
 
+  if (!userId) {
+    const err = new Error(
+      '[upload] userId is required to persist documents. The auth middleware must inject req.user._id before reaching the controller.'
+    );
+    err.statusCode = 500;
+    err.code = 'MISSING_USER_ID';
+    throw err;
+  }
+  if (!businessId) {
+    const err = new Error(
+      '[upload] businessId is required to persist documents. The auth middleware must inject req.user.businessId before reaching the controller.'
+    );
+    err.statusCode = 400;
+    err.code = 'MISSING_BUSINESS_ID';
+    throw err;
+  }
+
   const fileType = getFileType(file.originalname);
 
   let uploadDoc;
   try {
     uploadDoc = await Upload.create({
-      businessId,
-      userId,
+      businessId: new mongoose.Types.ObjectId(String(businessId)),
+      userId: new mongoose.Types.ObjectId(String(userId)),
       originalName: file.originalname,
       storedName: file.filename,
       mimeType: file.mimetype,
@@ -194,12 +239,31 @@ export const processUpload = async ({ file, businessId, userId }) => {
     const rawRows = await parseFileRows(file.path, file.originalname);
     const rows = normalizeRows(rawRows);
 
+    if (!Array.isArray(rows) || rows.length === 0) {
+      const fileTypeLabel = fileType === 'pdf' ? 'PDF' : fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg' ? 'image' : 'file';
+      const message = fileType === 'pdf'
+        ? 'Unable to extract structured business data from this PDF.'
+        : fileType === 'png' || fileType === 'jpg' || fileType === 'jpeg'
+          ? 'Unable to extract structured business data from this image.'
+          : 'No usable business data could be extracted from the uploaded file.';
+      const error = new Error(message);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const hasBusinessSignals = rows.some((row) => row.revenue != null || row.amount != null || row.cost != null || row.quantity != null || row.stock != null);
+    if (!hasBusinessSignals) {
+      const error = new Error('The uploaded file did not contain recognizable business metrics.');
+      error.statusCode = 400;
+      throw error;
+    }
+
     const detectedDataTypes = detectDataTypes(rows);
 
-    const saleDocs = buildSaleDocs(rows, businessId, uploadId);
-    const expenseDocs = buildExpenseDocs(rows, businessId, uploadId);
-    const productMap = buildProductMap(rows, businessId, uploadId);
-    const inventoryMap = buildInventoryMap(rows, businessId, uploadId);
+    const saleDocs = buildSaleDocs(rows, businessId, userId, uploadId);
+    const expenseDocs = buildExpenseDocs(rows, businessId, userId, uploadId);
+    const productMap = buildProductMap(rows, businessId, userId, uploadId);
+    const inventoryMap = buildInventoryMap(rows, businessId, userId, uploadId);
 
     const persistedSales = saleDocs.length ? (await Sale.insertMany(saleDocs)).length : 0;
     const persistedExpenses = expenseDocs.length ? (await Expense.insertMany(expenseDocs)).length : 0;
@@ -234,12 +298,15 @@ export const processUpload = async ({ file, businessId, userId }) => {
       rowsProcessed: rows.length,
     };
   } catch (error) {
+    // Log the real failure to the terminal so we don't return a generic 500.
+    console.error('[upload] Processing failed:', error.message);
+    if (error.stack) console.error(error.stack);
     try {
       uploadDoc.status = 'failed';
       uploadDoc.errorMessage = error.message || 'Unknown processing error';
       await uploadDoc.save();
-    } catch (_) {
-      // ignore — original error is more useful
+    } catch (saveErr) {
+      console.warn('[upload] Could not persist failed-status update:', saveErr.message);
     }
     error.statusCode = error.statusCode || 500;
     throw error;

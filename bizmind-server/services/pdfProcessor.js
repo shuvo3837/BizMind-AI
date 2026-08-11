@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { createRequire } from 'module';
-import { normalizeRows } from './dataNormalizer.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -24,5 +23,5 @@ export const parsePDFFile = async (filePath) => {
     });
     rows.push(record);
   }
-  return normalizeRows(rows);
+  return rows;
 };

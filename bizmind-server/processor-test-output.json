@@ -1,0 +1,96 @@
+{
+  "startedAt": "2026-08-10T20:18:46.136Z",
+  "events": [
+    {
+      "at": "2026-08-10T20:18:46.139Z",
+      "name": "boot",
+      "uri": true,
+      "envFile": "development"
+    },
+    {
+      "at": "2026-08-10T20:18:46.757Z",
+      "name": "connected",
+      "host": "ac-potc32c-shard-00-00.8c01ywb.mongodb.net",
+      "db": "bizmind_ai"
+    },
+    {
+      "at": "2026-08-10T20:18:47.520Z",
+      "name": "seed",
+      "userId": "6a7a31d1a5c5b708d8aabd65",
+      "businessId": "6a7a31d1a5c5b708d8aabd6f"
+    },
+    {
+      "at": "2026-08-10T20:18:47.520Z",
+      "name": "csv",
+      "csvPath": "C:\\projects\\New folder\\BizMind-AI\\sample-test.csv",
+      "exists": true
+    },
+    {
+      "at": "2026-08-10T20:18:47.908Z",
+      "name": "processUpload.ok",
+      "summary": {
+        "sales": 6,
+        "expenses": 0,
+        "products": 6,
+        "inventory": 6
+      },
+      "uploadId": "undefined"
+    },
+    {
+      "at": "2026-08-10T20:18:48.057Z",
+      "name": "sales",
+      "total": 6,
+      "withUserId": 6,
+      "sampleUserIds": [
+        "6a7a31d1a5c5b708d8aabd65",
+        "6a7a31d1a5c5b708d8aabd65"
+      ]
+    },
+    {
+      "at": "2026-08-10T20:18:48.235Z",
+      "name": "expenses",
+      "total": 0,
+      "withUserId": 0,
+      "sampleUserIds": []
+    },
+    {
+      "at": "2026-08-10T20:18:48.393Z",
+      "name": "products",
+      "total": 6,
+      "withUserId": 6,
+      "sampleUserIds": [
+        "6a7a31d1a5c5b708d8aabd65",
+        "6a7a31d1a5c5b708d8aabd65"
+      ]
+    },
+    {
+      "at": "2026-08-10T20:18:48.557Z",
+      "name": "inventory",
+      "total": 6,
+      "withUserId": 6,
+      "sampleUserIds": [
+        "6a7a31d1a5c5b708d8aabd65",
+        "6a7a31d1a5c5b708d8aabd65"
+      ]
+    },
+    {
+      "at": "2026-08-10T20:18:48.718Z",
+      "name": "uploads",
+      "total": 1,
+      "withUserId": 1,
+      "sampleUserIds": [
+        "6a7a31d1a5c5b708d8aabd65"
+      ]
+    },
+    {
+      "at": "2026-08-10T20:18:48.730Z",
+      "name": "verdict",
+      "ok": true
+    },
+    {
+      "at": "2026-08-10T20:18:48.738Z",
+      "name": "done",
+      "ok": true
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, CheckCircle2, Clock, Loader2, AlertCircle, Trash2 } from 'lucide-react';
+import { FileText, CheckCircle2, Clock, Loader2, AlertCircle, Trash2, BarChart3, FilePlus2 } from 'lucide-react';
 import { Card } from '../common/Card.jsx';
 import { Badge } from '../common/Badge.jsx';
 import { formatDate, formatFileSize } from '../../utils/formatters.js';
@@ -30,7 +30,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-export const UploadList = ({ uploads = [], loading = false, onDelete }) => {
+export const UploadList = ({ uploads = [], loading = false, onDelete, onViewAnalysis, onGenerateReport, busyActionId }) => {
   return (
     <Card title="Recent File Uploads" subtitle="History of processed documents and extracted data">
       {loading && uploads.length === 0 && (
@@ -80,16 +80,40 @@ export const UploadList = ({ uploads = [], loading = false, onDelete }) => {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <StatusBadge status={file.status} />
-                  {onDelete && id && (
-                    <button
-                      type="button"
-                      onClick={() => onDelete(id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                      aria-label={`Delete ${name}`}
-                      title="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  {id && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onViewAnalysis?.(id)}
+                        disabled={busyActionId === id}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors disabled:opacity-50"
+                        aria-label={`View analysis for ${name}`}
+                        title="View analysis"
+                      >
+                        <BarChart3 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onGenerateReport?.(id)}
+                        disabled={busyActionId === id}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors disabled:opacity-50"
+                        aria-label={`Generate report for ${name}`}
+                        title="Generate report"
+                      >
+                        <FilePlus2 size={14} />
+                      </button>
+                      {onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          aria-label={`Delete ${name}`}
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

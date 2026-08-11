@@ -1,4 +1,9 @@
 import Report from '../models/Report.js';
+import Upload from '../models/Upload.js';
+import Sale from '../models/Sale.js';
+import Expense from '../models/Expense.js';
+import Product from '../models/Product.js';
+import Inventory from '../models/Inventory.js';
 import { calculateAnalytics } from '../services/analyticsService.js';
 import { generateAiResponse, isAiConfigured } from '../services/aiService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -11,6 +16,71 @@ const PERIOD_PRESETS = {
   yearly: 365,
 };
 
+export const generateDatasetReport = asyncHandler(async (req, res) => {
+  const businessId = req.user?.businessId;
+  if (!businessId) return fail(res, 'No business linked to this user.', 400);
+
+  const datasetId = req.params.datasetId;
+  if (!datasetId) return fail(res, 'Dataset ID is required.', 400);
+
+  const upload = await Upload.findOne({ _id: datasetId, businessId, userId: req.user?._id }).lean();
+  if (!upload) return fail(res, 'Dataset not found or access denied.', 404);
+
+  const [sales, expenses, products, inventory] = await Promise.all([
+    Sale.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Expense.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Product.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+    Inventory.find({ businessId, userId: req.user?._id, uploadId: datasetId }).lean(),
+  ]);
+
+  const totalRevenue = sales.reduce((sum, item) => sum + (item.revenue || 0), 0);
+  const totalExpenses = expenses.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalProfit = totalRevenue - totalExpenses;
+  const profitMargin = totalRevenue > 0 ? Number(((totalProfit / totalRevenue) * 100).toFixed(2)) : 0;
+
+  const analytics = {
+    totalRevenue,
+    totalProfit,
+    totalExpenses,
+    totalSales: sales.length,
+    profitMargin,
+    topProducts: products.slice(0, 5),
+    revenueByCategory: [],
+    expenseByCategory: [],
+    inventoryStatus: inventory.slice(0, 5),
+  };
+
+  let aiInsights = null;
+  if (isAiConfigured()) {
+    const ai = await generateAiResponse({ analytics }, `Generate a concise executive report based ONLY on the data for ${upload.originalName}.`);
+    if (ai.ok) aiInsights = ai.text;
+  }
+
+  const report = await Report.create({
+    businessId,
+    userId: req.user._id,
+    title: req.body.title || 'Dataset Report',
+    reportType: req.body.reportType || 'Executive Summary',
+    period: req.body.period || 'monthly',
+    startDate: new Date(),
+    endDate: new Date(),
+    summary: {
+      totalRevenue: analytics.totalRevenue,
+      totalProfit: analytics.totalProfit,
+      totalExpenses: analytics.totalExpenses,
+      totalSales: analytics.totalSales,
+      profitMargin: analytics.profitMargin,
+      topProducts: analytics.topProducts || [],
+      revenueByCategory: analytics.revenueByCategory || [],
+      expenseByCategory: analytics.expenseByCategory || [],
+    },
+    aiInsights: aiInsights || 'AI insights were not generated.',
+    status: 'completed',
+  });
+
+  return ok(res, 'Dataset report generated successfully.', report);
+});
+
 export const generateReport = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
@@ -19,7 +89,7 @@ export const generateReport = asyncHandler(async (req, res) => {
   const days = PERIOD_PRESETS[period] || 30;
   const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const analytics = await calculateAnalytics(businessId);
+  const analytics = await calculateAnalytics(req.user?._id, businessId);
 
   const hasData =
     (analytics.totalSales || 0) + (analytics.totalProducts || 0) + (analytics.totalExpenses || 0) > 0 ||
@@ -54,6 +124,7 @@ export const generateReport = asyncHandler(async (req, res) => {
     businessId,
     userId: req.user._id,
     title: req.body.title || `${period.charAt(0).toUpperCase() + period.slice(1)} Business Report`,
+    reportType: req.body.reportType || 'Executive Summary',
     period,
     startDate,
     endDate: new Date(),
@@ -78,7 +149,7 @@ export const getReportsList = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const reports = await Report.find({ businessId }).sort({ createdAt: -1 }).lean();
+  const reports = await Report.find({ businessId, userId: req.user._id }).sort({ createdAt: -1 }).lean();
   return ok(res, 'Reports retrieved.', reports);
 });
 
@@ -86,7 +157,7 @@ export const getReportById = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const report = await Report.findOne({ _id: req.params.id, businessId }).lean();
+  const report = await Report.findOne({ _id: req.params.id, businessId, userId: req.user._id }).lean();
   if (!report) return fail(res, 'Report not found.', 404);
   return ok(res, 'Report retrieved.', report);
 });
@@ -95,7 +166,7 @@ export const deleteReport = asyncHandler(async (req, res) => {
   const businessId = req.user?.businessId;
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
-  const report = await Report.findOne({ _id: req.params.id, businessId });
+  const report = await Report.findOne({ _id: req.params.id, businessId, userId: req.user._id });
   if (!report) return fail(res, 'Report not found.', 404);
   await report.deleteOne();
   return ok(res, 'Report deleted.', { id: req.params.id });
@@ -195,7 +266,7 @@ export const downloadReport = asyncHandler(async (req, res) => {
   if (!businessId) return fail(res, 'No business linked to this user.', 400);
 
   const format = (req.query.format || 'json').toLowerCase();
-  const report = await Report.findOne({ _id: req.params.id, businessId }).lean();
+  const report = await Report.findOne({ _id: req.params.id, businessId, userId: req.user._id }).lean();
   if (!report) return fail(res, 'Report not found.', 404);
 
   const safeTitle = (report.title || 'report').replace(/[^a-z0-9-_]+/gi, '_').slice(0, 60);
