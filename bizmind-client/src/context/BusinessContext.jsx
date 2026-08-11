@@ -1,8 +1,16 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { businessService } from '../services/businessService.js';
 import { useAuth } from '../hooks/useAuth.js';
 
 export const BusinessContext = createContext();
+
+export const useBusiness = () => {
+  const ctx = useContext(BusinessContext);
+  if (!ctx) {
+    throw new Error('useBusiness must be used within a BusinessProvider');
+  }
+  return ctx;
+};
 
 const DEFAULT_BUSINESS = {
   id: null,

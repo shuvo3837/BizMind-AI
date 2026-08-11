@@ -1,28 +1,92 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../layouts/DashboardLayout.jsx';
 import { Card } from '../../components/common/Card.jsx';
 import { Input } from '../../components/common/Input.jsx';
 import { Button } from '../../components/common/Button.jsx';
+import { useBusiness } from '../../context/BusinessContext.jsx';
+
+const EMPTY_PROFILE = {
+  companyName: '',
+  industry: '',
+  currency: 'USD',
+  monthlyTarget: 0,
+  employeesCount: 0,
+  website: '',
+  description: '',
+};
 
 export const BusinessProfilePage = () => {
-  const [profile, setProfile] = useState({
-    companyName: 'Apex Growth Dynamics',
-    industry: 'SaaS & Digital E-Commerce',
-    currency: 'USD',
-    monthlyTarget: 150000,
-    employeesCount: 24,
-    website: 'https://apexgrowth.io',
-    description: 'High-growth direct-to-consumer brand offering premium fitness products & automated SaaS subscriptions.'
-  });
+  const { business, loading: ctxLoading, error: ctxError, refresh, updateBusiness } = useBusiness();
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [saveError, setSaveError] = useState(null);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (business && business.id) {
+      setProfile({
+        companyName: business.companyName || '',
+        industry: business.industry || '',
+        currency: business.currency || 'USD',
+        monthlyTarget: business.monthlyTarget ?? 0,
+        employeesCount: business.employeesCount ?? 0,
+        website: business.website || '',
+        description: business.description || '',
+      });
+    }
+  }, [business?.id]);
 
   const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    setProfile((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? (value === '' ? 0 : Number(value)) : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveMessage(null);
+    setSaveError(null);
+    try {
+      const payload = {
+        companyName: profile.companyName,
+        industry: profile.industry,
+        currency: profile.currency,
+        monthlyTarget: Number(profile.monthlyTarget) || 0,
+        employeesCount: Number(profile.employeesCount) || 0,
+        website: profile.website,
+        description: profile.description,
+      };
+      await updateBusiness(payload);
+      setSaveMessage('Business profile updated successfully');
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message || err?.message || 'Failed to update business profile';
+      setSaveError(msg);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <DashboardLayout title="Business Profile Management">
       <Card title="Company Information & Target Parameters" className="max-w-3xl">
-        <form className="space-y-4 mt-2">
+        {ctxLoading && !business?.id && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            Loading business profile...
+          </p>
+        )}
+        {ctxError && (
+          <p className="text-xs text-rose-600 dark:text-rose-400 mb-3">{ctxError}</p>
+        )}
+
+        <form className="space-y-4 mt-2" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Company Name" name="companyName" value={profile.companyName} onChange={handleChange} />
             <Input label="Industry Category" name="industry" value={profile.industry} onChange={handleChange} />
@@ -45,8 +109,15 @@ export const BusinessProfilePage = () => {
             />
           </div>
 
-          <Button type="button" variant="primary">
-            Update Business Profile
+          {saveMessage && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">{saveMessage}</p>
+          )}
+          {saveError && (
+            <p className="text-xs text-rose-600 dark:text-rose-400">{saveError}</p>
+          )}
+
+          <Button type="submit" variant="primary" disabled={saving || ctxLoading}>
+            {saving ? 'Updating...' : 'Update Business Profile'}
           </Button>
         </form>
       </Card>

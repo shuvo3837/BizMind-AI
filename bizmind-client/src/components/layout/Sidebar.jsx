@@ -6,7 +6,6 @@ import {
   BarChart3,
   Bot,
   FileText,
-  Building2,
   Settings,
   LogOut,
   BrainCircuit
@@ -23,7 +22,6 @@ export const Sidebar = () => {
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'AI Chat', path: '/ai-chat', icon: Bot },
     { name: 'Reports', path: '/reports', icon: FileText },
-    { name: 'Business Profile', path: '/business-profile', icon: Building2 },
     { name: 'Settings', path: '/settings', icon: Settings }
   ];
 
