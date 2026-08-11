@@ -1,0 +1,38 @@
+◇ injected env (12) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+🎨 Vite middleware mounted. Frontend root: C:\projects\New folder\BizMind-AI
+   index.html: C:\projects\New folder\BizMind-AI\index.html
+   node_modules: C:\projects\New folder\BizMind-AI\bizmind-client\node_modules
+🚀 BizMind AI Backend listening on http://0.0.0.0:4000
+📊 Environment: development
+🤖 Gemini: configured
+⚡ Groq: configured
+🔗 API health: http://0.0.0.0:4000/api/health
+🌐 Frontend:   http://0.0.0.0:4000/ (React app via Vite)
+
+👉 Open http://localhost:4000 in your browser.
+
+✅ MongoDB Atlas connected: ac-potc32c-shard-00-01.8c01ywb.mongodb.net/bizmind_ai
+✅ MongoDB connected: ac-potc32c-shard-00-01.8c01ywb.mongodb.net/bizmind_ai
+[2026-08-11T20:31:56.044Z] GET / -> 200 (48ms) user=anonymous
+[2026-08-11T20:31:56.592Z] GET /reports -> 200 (50ms) user=anonymous
+[2026-08-11T20:31:56.635Z] GET /bizmind-client/src/main.jsx -> 200 (1ms) user=anonymous
+[2026-08-11T20:31:56.916Z] GET /bizmind-client/src/App.jsx -> 200 (0ms) user=anonymous
+[2026-08-11T20:31:56.952Z] GET /bizmind-client/src/styles/index.css -> 200 (1ms) user=anonymous
+[2026-08-11T20:31:57.134Z] GET /bizmind-client/src/pages/Reports/ReportsPage.jsx -> 200 (33ms) user=anonymous
+🔁 MongoDB reconnected
+🔁 MongoDB reconnected
+[2026-08-11T20:35:52.940Z] GET / -> 200 (7ms) user=anonymous
+[2026-08-11T20:38:05.471Z] POST /api/auth/register -> 201 (361ms) user=anonymous
+[2026-08-11T20:38:05.635Z] POST /api/business -> 201 (161ms) user=6a7b882d97f6c3c3746ebda4
+[2026-08-11T20:38:05.770Z] GET /api/report/list -> 200 (96ms) user=6a7b882d97f6c3c3746ebda4
+[2026-08-11T20:38:53.590Z] POST /api/auth/register -> 201 (325ms) user=anonymous
+[2026-08-11T20:38:53.756Z] POST /api/business -> 201 (164ms) user=6a7b885d97f6c3c3746ebdad
+[2026-08-11T20:38:53.835Z] POST /api/upload -> 500 (53ms) user=6a7b885d97f6c3c3746ebdad
+[2026-08-11T20:38:53.946Z] GET /api/report/list -> 200 (94ms) user=6a7b885d97f6c3c3746ebdad
+[2026-08-11T20:39:43.252Z] POST /api/auth/register -> 201 (414ms) user=anonymous
+[2026-08-11T20:39:43.404Z] POST /api/business -> 201 (148ms) user=6a7b888f97f6c3c3746ebdb7
+[2026-08-11T20:39:44.490Z] POST /api/upload -> 200 (789ms) user=6a7b888f97f6c3c3746ebdb7
+[2026-08-11T20:39:44.854Z] GET /api/report/list -> 200 (121ms) user=6a7b888f97f6c3c3746ebdb7
+[2026-08-11T20:39:54.835Z] GET /reports -> 200 (3ms) user=anonymous

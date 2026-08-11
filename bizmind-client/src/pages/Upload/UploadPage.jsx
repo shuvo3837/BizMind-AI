@@ -85,7 +85,15 @@ export const UploadPage = () => {
 
   const recordsCount = result?.recordsProcessed ?? result?.summary?.total ?? 0;
   const fileName = result?.fileName || result?.originalName || currentFile?.name;
-  const uploadMessage = result?.message || (result?.success ? 'Upload completed.' : null);
+  const autoReport = result?.autoReport || result?.data?.autoReport;
+  const uploadMessage = (() => {
+    if (autoReport && (autoReport.id || autoReport.title)) {
+      const rev = Number(autoReport.totalRevenue || 0).toLocaleString();
+      const profit = Number(autoReport.totalProfit || 0).toLocaleString();
+      return `File "${fileName}" processed (${recordsCount} records). Report ready — Revenue $${rev}, Profit $${profit}.`;
+    }
+    return result?.message || (result?.success ? 'Upload completed.' : null);
+  })();
 
   return (
     <DashboardLayout title="Upload Data & Intelligence Processing">
